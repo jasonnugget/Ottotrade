@@ -1,5 +1,6 @@
 import { useRef, useMemo, useEffect } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
+import { forceX, forceY } from 'd3-force-3d';
 import { TIER, tierColor, EVENT_COLOR, stockPerfColor } from './theme.js';
 
 // The "web of connections": event nodes + stock nodes, edges tiered by confidence.
@@ -15,7 +16,9 @@ export default function ConnectionWeb({ graph, selectedId, onSelect, width, heig
       cache.current.set(n.id, obj);
       return obj;
     });
-    const links = graph.edges.map((e) => ({ ...e }));
+    // Drop "unrelated" event-stock links entirely — same-day coincidences aren't a
+    // real causal connection, so they're just clutter on the web.
+    const links = graph.edges.filter((e) => e.tier !== 'unrelated').map((e) => ({ ...e }));
     return { nodes, links };
   }, [graph]);
 
@@ -24,6 +27,12 @@ export default function ConnectionWeb({ graph, selectedId, onSelect, width, heig
     const fg = fgRef.current;
     if (!fg || !data.nodes.length) return;
     fg.d3Force('charge')?.strength(-140);
+    // A weak pull toward center so nodes with no remaining links (e.g. a stock whose
+    // only event connections were "unrelated" and got filtered out) don't drift off
+    // into empty space under charge repulsion alone — barely affects linked nodes,
+    // which are already held in place by much stronger link forces.
+    fg.d3Force('centerX', forceX(0).strength(0.02));
+    fg.d3Force('centerY', forceY(0).strength(0.02));
     // Fit once on first populated render; don't re-zoom on every scrubber step.
     if (!fitted.current) {
       fitted.current = true;
@@ -46,11 +55,11 @@ export default function ConnectionWeb({ graph, selectedId, onSelect, width, heig
   const nodeCanvasObject = (node, ctx, scale) => {
     const r = radius(node);
     const isSel = node.id === selectedId;
+    const pulse = 0.65 + 0.35 * Math.sin(Date.now() / 500);
 
     if (node.type === 'stock') {
       // Pulsing neon ring, colored by day performance: green for up, red for down.
       const col = stockPerfColor(node.dayChangePct);
-      const pulse = 0.65 + 0.35 * Math.sin(Date.now() / 500);
       ctx.save();
       ctx.shadowColor = col;
       ctx.shadowBlur = (14 + 8 * pulse) / scale;
@@ -72,7 +81,7 @@ export default function ConnectionWeb({ graph, selectedId, onSelect, width, heig
       return;
     }
 
-    // event node — uniform orange glow, same size for every event
+    // event node — same pulsing glow treatment as the stock bubbles, kept orange
     if (isSel) {
       ctx.beginPath();
       ctx.arc(node.x, node.y, r + 4 / scale, 0, 2 * Math.PI);
@@ -82,7 +91,7 @@ export default function ConnectionWeb({ graph, selectedId, onSelect, width, heig
     }
     ctx.save();
     ctx.shadowColor = EVENT_COLOR;
-    ctx.shadowBlur = (isSel ? 14 : 8) / scale;
+    ctx.shadowBlur = ((isSel ? 18 : 14) + 8 * pulse) / scale;
     ctx.beginPath();
     ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
     ctx.fillStyle = EVENT_COLOR;
