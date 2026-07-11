@@ -73,7 +73,9 @@ export default function HomeTab({
 function Legend() {
   return (
     <div className="legend">
-      {Object.entries(TIER).map(([k, v]) => (
+      {Object.entries(TIER)
+        .filter(([k]) => k !== 'unrelated')
+        .map(([k, v]) => (
         <div className="legend-item" key={k}>
           <svg width="22" height="8">
             <line x1="0" y1="4" x2="22" y2="4" stroke={v.color} strokeWidth="2" strokeDasharray={v.dash.join(' ')} />
