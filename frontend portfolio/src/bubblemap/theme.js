@@ -19,6 +19,9 @@ export const CATEGORY = {
   earnings: '#06b6d4',
 };
 
+// The stock node itself is the "shock epicenter" — always this color, independent of tier.
+export const EPICENTER_COLOR = '#ff2d78';
+
 export const categoryLabel = (c) =>
   (c || '').replace(/_/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase());
 
