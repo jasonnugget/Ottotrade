@@ -20,7 +20,7 @@ export default function EventsTab({ events, onOpenEvent }) {
       <header className="events-header">
         <div>
           <h1>Events</h1>
-          <p className="muted tiny">Every event behind a portfolio move — tap one to see the reasoning</p>
+          <p className="muted tiny"></p>
         </div>
         <div className="events-filters">
           {FILTERS.map((f) => (

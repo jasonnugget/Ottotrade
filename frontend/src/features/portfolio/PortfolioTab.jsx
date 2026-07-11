@@ -15,7 +15,7 @@ export default function PortfolioTab({ live, timeline, stocks, onOpenStock, onOp
       <header className="port-header">
         <div className="port-title">
           <h1>Portfolio</h1>
-          <p className="muted tiny">Robinhood-style overview · click a stock to explore its event web</p>
+          <p className="muted tiny"></p>
         </div>
         <button className="web-cta" onClick={onOpenWeb}>◕ Home — event web →</button>
       </header>

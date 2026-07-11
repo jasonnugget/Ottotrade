@@ -35,7 +35,7 @@ export default function HomeTab({
       <header className="bm-header">
         <div className="bm-title">
           <h1>Home</h1>
-          <p className="muted tiny">Click a stock to drill in · a bubble to see the reasoning</p>
+          <p className="muted tiny"></p>
         </div>
         <div className="view-tabs">
           <button className={mode === 'web' ? 'active' : ''} onClick={() => setMode('web')}>◕ Web</button>
