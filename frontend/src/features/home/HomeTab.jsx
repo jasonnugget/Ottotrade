@@ -53,7 +53,6 @@ export default function HomeTab({
           <Legend />
         </div>
         <aside className="bm-side">
-          <RobinhoodPanel timeline={timeline} currentTs={currentTs} live={live} />
           {selectedEvent ? (
             <EventPanel
               event={selectedEvent}
@@ -66,6 +65,8 @@ export default function HomeTab({
           )}
         </aside>
       </div>
+
+      <RobinhoodPanel timeline={timeline} currentTs={currentTs} live={live} />
     </div>
   );
 }
