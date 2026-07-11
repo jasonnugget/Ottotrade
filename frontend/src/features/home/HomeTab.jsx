@@ -34,7 +34,7 @@ export default function HomeTab({
     <div className="webview">
       <header className="bm-header">
         <div className="bm-title">
-          <h1>Event Web — all stocks</h1>
+          <h1>Home</h1>
           <p className="muted tiny">Click a stock to drill in · a bubble to see the reasoning</p>
         </div>
         <div className="view-tabs">
