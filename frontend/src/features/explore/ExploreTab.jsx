@@ -21,6 +21,8 @@ export default function ExploreTab({
   related,
   onSelect,
   onPickSymbol,
+  onBack,
+  backLabel,
   enrich,
 }) {
   const [stageRef, size] = useStageSize();
@@ -56,6 +58,7 @@ export default function ExploreTab({
   return (
     <div className="stockview">
       <header className="sv-header">
+        {onBack && <button className="back-btn" onClick={onBack}>← Back to {backLabel}</button>}
         <div className="sv-id">
           <span className="sv-ticker">{symbol}</span>
           <span className="muted">{name}</span>
