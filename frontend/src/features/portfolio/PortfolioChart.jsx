@@ -11,7 +11,7 @@ export default function PortfolioChart({ points, costBasis = 50000, height = 240
     if (!el.current) return;
     const chart = createChart(el.current, {
       height,
-      layout: { background: { color: 'transparent' }, textColor: '#8b97b0', fontSize: 11 },
+      layout: { background: { color: 'transparent' }, textColor: '#8b97b0', fontSize: 11, attributionLogo: false },
       grid: { horzLines: { color: 'rgba(255,255,255,0.05)' }, vertLines: { color: 'rgba(255,255,255,0.04)' } },
       rightPriceScale: { borderColor: 'rgba(255,255,255,0.1)' },
       timeScale: { borderColor: 'rgba(255,255,255,0.1)' },
@@ -61,5 +61,17 @@ export default function PortfolioChart({ points, costBasis = 50000, height = 240
     chartRef.current?.timeScale().fitContent();
   }, [points, costBasis]);
 
-  return <div ref={el} style={{ width: '100%' }} />;
+  return (
+    <div style={{ width: '100%' }}>
+      <div ref={el} style={{ width: '100%' }} />
+      <a
+        className="chart-attribution"
+        href="https://www.tradingview.com/"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Charts by TradingView
+      </a>
+    </div>
+  );
 }

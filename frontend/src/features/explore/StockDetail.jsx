@@ -17,7 +17,7 @@ export default function StockDetail({ symbol, name }) {
     if (!el.current) return;
     const chart = createChart(el.current, {
       height: 200,
-      layout: { background: { color: 'transparent' }, textColor: '#8b97b0', fontSize: 10 },
+      layout: { background: { color: 'transparent' }, textColor: '#8b97b0', fontSize: 10, attributionLogo: false },
       grid: { horzLines: { color: 'rgba(255,255,255,0.05)' }, vertLines: { color: 'rgba(255,255,255,0.05)' } },
       rightPriceScale: { borderColor: 'rgba(255,255,255,0.1)' },
       timeScale: { borderColor: 'rgba(255,255,255,0.1)' },
@@ -88,6 +88,14 @@ export default function StockDetail({ symbol, name }) {
         </div>
       </div>
       <div ref={el} className="sd-chart" />
+      <a
+        className="chart-attribution"
+        href="https://www.tradingview.com/"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Charts by TradingView
+      </a>
       {error && <div className="tiny neg">Error: {error}</div>}
       {meta && (
         <div className="muted tiny">

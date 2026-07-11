@@ -7,6 +7,12 @@
 
 .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; }
 
+/* Required attribution link for the lightweight-charts library, used wherever we
+   disable its built-in logo overlay (layout.attributionLogo: false) — currently
+   Portfolio's PortfolioChart and Explore's StockDetail. */
+.chart-attribution { display: block; text-align: right; font-size: 10px; color: var(--muted); text-decoration: none; margin-top: 2px; }
+.chart-attribution:hover { color: var(--text); }
+
 /* portfolio-value display primitives — used by Portfolio's hero and Home's mini panel */
 .rh-label { font-size: 12px; }
 .rh-value { font-size: 30px; font-weight: 700; margin: 2px 0; }
