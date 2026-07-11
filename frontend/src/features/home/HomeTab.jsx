@@ -43,30 +43,28 @@ export default function HomeTab({
         </div>
       </header>
 
-      <div className="bm-body">
-        <div className="bm-stage" ref={stageRef}>
-          {mode === 'web' ? (
-            <ConnectionWeb graph={graph} selectedId={selectedEvent?.id} onSelect={handleSelect} width={size.w} height={size.h} />
-          ) : (
-            <GeoMap events={visibleEvents} selectedId={selectedEvent?.id} onSelect={handleSelect} width={size.w} height={size.h} />
-          )}
-          <Legend />
-        </div>
-        <aside className="bm-side">
-          {selectedEvent ? (
-            <EventPanel
-              event={selectedEvent}
-              related={related}
-              onPick={(id) => (eventsById[id] ? onSelectEvent({ id, type: 'event' }) : onOpenStock(id))}
-              enrich={enrich}
-            />
-          ) : (
-            <div className="ep-empty muted tiny">Click a bubble for its confidence tier and causal reasoning.</div>
-          )}
-        </aside>
+      <div className="bm-stage" ref={stageRef}>
+        {mode === 'web' ? (
+          <ConnectionWeb graph={graph} selectedId={selectedEvent?.id} onSelect={handleSelect} width={size.w} height={size.h} />
+        ) : (
+          <GeoMap events={visibleEvents} selectedId={selectedEvent?.id} onSelect={handleSelect} width={size.w} height={size.h} />
+        )}
+        <Legend />
       </div>
 
-      <RobinhoodPanel timeline={timeline} currentTs={currentTs} live={live} />
+      <div className="bm-footer">
+        <RobinhoodPanel timeline={timeline} currentTs={currentTs} live={live} />
+        {selectedEvent ? (
+          <EventPanel
+            event={selectedEvent}
+            related={related}
+            onPick={(id) => (eventsById[id] ? onSelectEvent({ id, type: 'event' }) : onOpenStock(id))}
+            enrich={enrich}
+          />
+        ) : (
+          <div className="ep-empty muted tiny">Click a bubble for its confidence tier and causal reasoning.</div>
+        )}
+      </div>
     </div>
   );
 }
