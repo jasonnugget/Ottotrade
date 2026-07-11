@@ -35,19 +35,21 @@ export default function RobinhoodPanel({ timeline, currentTs, live }) {
 
   return (
     <div className="rh-panel">
-      <div className="rh-label muted">Portfolio value{atDate ? ` · ${atDate}` : ''}</div>
-      <div className="rh-value">{value != null ? usd(value) : '—'}</div>
-      <div className={`rh-change ${cls}`}>
-        {signedUsd(pl)} <span className="rh-pct">{signedPct(pl / cost)}</span>
-        <span className="muted rh-since"> since inception</span>
-      </div>
+      <div className="rh-main">
+        <div className="rh-label muted">Portfolio value{atDate ? ` · ${atDate}` : ''}</div>
+        <div className="rh-value">{value != null ? usd(value) : '—'}</div>
+        <div className={`rh-change ${cls}`}>
+          {signedUsd(pl)} <span className="rh-pct">{signedPct(pl / cost)}</span>
+          <span className="muted rh-since"> since inception</span>
+        </div>
 
-      {spark && (
-        <svg className="rh-spark" viewBox={`0 0 ${spark.w} ${spark.h}`} preserveAspectRatio="none">
-          <line x1="0" x2={spark.w} y1={spark.costY} y2={spark.costY} stroke="#475569" strokeDasharray="3 3" strokeWidth="1" />
-          <path d={spark.d} fill="none" stroke={spark.color} strokeWidth="2" />
-        </svg>
-      )}
+        {spark && (
+          <svg className="rh-spark" viewBox={`0 0 ${spark.w} ${spark.h}`} preserveAspectRatio="none">
+            <line x1="0" x2={spark.w} y1={spark.costY} y2={spark.costY} stroke="#475569" strokeDasharray="3 3" strokeWidth="1" />
+            <path d={spark.d} fill="none" stroke={spark.color} strokeWidth="2" />
+          </svg>
+        )}
+      </div>
 
       <div className="rh-holdings">
         {(live?.positions || []).map((p) => (
