@@ -1,6 +1,6 @@
 import { useRef, useMemo, useEffect } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
-import { TIER, CATEGORY, tierColor } from './theme.js';
+import { TIER, CATEGORY, tierColor, EPICENTER_COLOR } from './theme.js';
 
 // The "web of connections": event nodes + stock nodes, edges tiered by confidence.
 export default function ConnectionWeb({ graph, selectedId, onSelect, width, height }) {
@@ -40,23 +40,30 @@ export default function ConnectionWeb({ graph, selectedId, onSelect, width, heig
     const isSel = node.id === selectedId;
 
     if (node.type === 'stock') {
+      // Pulsing neon ring: the stock is the shock epicenter, same visual role in every view.
+      const pulse = 0.65 + 0.35 * Math.sin(Date.now() / 500);
+      ctx.save();
+      ctx.shadowColor = EPICENTER_COLOR;
+      ctx.shadowBlur = (14 + 8 * pulse) / scale;
       ctx.beginPath();
       ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = '#0a0f1e';
       ctx.fill();
-      ctx.lineWidth = 2 / scale;
-      ctx.strokeStyle = isSel ? '#e2e8f0' : '#475569';
+      ctx.lineWidth = 2.25 / scale;
+      ctx.strokeStyle = isSel ? '#ffffff' : EPICENTER_COLOR;
       ctx.stroke();
+      ctx.restore();
+
       const fs = 11 / scale;
       ctx.font = `700 ${fs}px -apple-system, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#e2e8f0';
+      ctx.fillStyle = '#f8fafc';
       ctx.fillText(node.label, node.x, node.y);
       return;
     }
 
-    // event node
+    // event node — soft neon glow in its confidence-tier color
     const col = tierColor(node.tier);
     if (isSel) {
       ctx.beginPath();
@@ -65,6 +72,9 @@ export default function ConnectionWeb({ graph, selectedId, onSelect, width, heig
       ctx.lineWidth = 1.5 / scale;
       ctx.stroke();
     }
+    ctx.save();
+    ctx.shadowColor = col;
+    ctx.shadowBlur = (isSel ? 14 : 8) / scale;
     ctx.beginPath();
     ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
     ctx.fillStyle = col;
@@ -74,6 +84,7 @@ export default function ConnectionWeb({ graph, selectedId, onSelect, width, heig
     ctx.lineWidth = 1.5 / scale;
     ctx.strokeStyle = CATEGORY[node.category] || '#94a3b8';
     ctx.stroke();
+    ctx.restore();
   };
 
   const nodePointerAreaPaint = (node, color, ctx) => {
@@ -102,7 +113,12 @@ export default function ConnectionWeb({ graph, selectedId, onSelect, width, heig
       w = link.tier === 'direct' ? 1.6 : link.tier === 'indirect' ? 1.1 : 0.8;
     }
     const touches = selectedId && (s.id === selectedId || t.id === selectedId);
+    ctx.save();
     ctx.globalAlpha = selectedId ? (touches ? 1 : 0.08) : 0.65;
+    if (touches) {
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 6 / scale;
+    }
     ctx.strokeStyle = color;
     ctx.lineWidth = w / scale;
     ctx.setLineDash(dash.map((d) => d / scale));
@@ -110,31 +126,32 @@ export default function ConnectionWeb({ graph, selectedId, onSelect, width, heig
     ctx.moveTo(s.x, s.y);
     ctx.lineTo(t.x, t.y);
     ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.globalAlpha = 1;
+    ctx.restore();
   };
 
   return (
-    <ForceGraph2D
-      ref={fgRef}
-      width={width}
-      height={height}
-      graphData={data}
-      backgroundColor="#0b1020"
-      cooldownTicks={120}
-      nodeLabel={(n) => (n.type === 'stock' ? `${n.name} (${n.sector})` : n.label)}
-      nodeCanvasObject={nodeCanvasObject}
-      nodePointerAreaPaint={nodePointerAreaPaint}
-      linkCanvasObject={linkCanvasObject}
-      linkDirectionalParticles={(l) =>
-        selectedId && (l.source.id === selectedId || l.target.id === selectedId) ? 4 : 0
-      }
-      linkDirectionalParticleWidth={2}
-      linkDirectionalParticleColor={(l) =>
-        l.kind === 'event-event' ? TIER.related.color : tierColor(l.tier)
-      }
-      onNodeClick={(n) => onSelect(n)}
-      onBackgroundClick={() => onSelect(null)}
-    />
+    <div className="web-backdrop" style={{ width, height }}>
+      <ForceGraph2D
+        ref={fgRef}
+        width={width}
+        height={height}
+        graphData={data}
+        backgroundColor="rgba(0,0,0,0)"
+        cooldownTicks={120}
+        nodeLabel={(n) => (n.type === 'stock' ? `${n.name} (${n.sector})` : n.label)}
+        nodeCanvasObject={nodeCanvasObject}
+        nodePointerAreaPaint={nodePointerAreaPaint}
+        linkCanvasObject={linkCanvasObject}
+        linkDirectionalParticles={(l) =>
+          selectedId && (l.source.id === selectedId || l.target.id === selectedId) ? 4 : 0
+        }
+        linkDirectionalParticleWidth={2}
+        linkDirectionalParticleColor={(l) =>
+          l.kind === 'event-event' ? TIER.related.color : tierColor(l.tier)
+        }
+        onNodeClick={(n) => onSelect(n)}
+        onBackgroundClick={() => onSelect(null)}
+      />
+    </div>
   );
 }
