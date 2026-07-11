@@ -1,10 +1,21 @@
 import { usd, signedPct, plClass } from '../../api.js';
+import { useEffect, useMemo, useState } from 'react';
 import { tierColor, categoryLabel } from '../../shared/theme.js';
 import { useStageSize } from '../../shared/graphUtils.js';
-import ConnectionWeb from '../../shared/ConnectionWeb.jsx';
+import ExploreConnectionWeb from './ExploreConnectionWeb.jsx';
 import EventPanel from '../../shared/EventPanel.jsx';
 import StockDetail from './StockDetail.jsx';
 import './explore.css';
+
+const TOP_US_STOCKS = [
+  ['NVDA', 'NVIDIA'], ['MSFT', 'Microsoft'], ['AAPL', 'Apple'], ['AMZN', 'Amazon'],
+  ['GOOGL', 'Alphabet Class A'], ['GOOG', 'Alphabet Class C'], ['META', 'Meta Platforms'],
+  ['AVGO', 'Broadcom'], ['TSLA', 'Tesla'], ['BRK.B', 'Berkshire Hathaway'],
+  ['JPM', 'JPMorgan Chase'], ['WMT', 'Walmart'], ['LLY', 'Eli Lilly'], ['V', 'Visa'],
+  ['MA', 'Mastercard'], ['NFLX', 'Netflix'], ['XOM', 'Exxon Mobil'], ['COST', 'Costco'],
+  ['ORCL', 'Oracle'], ['HD', 'Home Depot'], ['PG', 'Procter & Gamble'], ['ABBV', 'AbbVie'],
+  ['BAC', 'Bank of America'], ['KO', 'Coca-Cola'], ['CRM', 'Salesforce'],
+].map(([symbol, stockName]) => ({ symbol, name: stockName }));
 
 // Drill-in for one stock: price chart + a bubble map of the events that moved it.
 // symbol is null until a stock is picked (from the picker below, or via onOpenStock
@@ -26,6 +37,21 @@ export default function ExploreTab({
   enrich,
 }) {
   const [stageRef, size] = useStageSize();
+  const [query, setQuery] = useState('');
+  const [activeView, setActiveView] = useState('chart');
+  const topStocks = useMemo(() => TOP_US_STOCKS.map((stock) => ({
+    ...stock,
+    name: stocks?.[stock.symbol]?.name || stock.name,
+    position: positions?.find((item) => item.symbol === stock.symbol),
+  })), [positions, stocks]);
+  const filteredStocks = topStocks.filter((stock) => {
+    const search = query.trim().toLowerCase();
+    return !search || stock.symbol.toLowerCase().includes(search) || stock.name.toLowerCase().includes(search);
+  });
+
+  useEffect(() => {
+    setActiveView('chart');
+  }, [symbol]);
 
   if (!symbol) {
     return (
@@ -34,26 +60,37 @@ export default function ExploreTab({
           <div className="sv-id"><span className="sv-ticker">Explore</span></div>
         </header>
         <div className="card">
-          <div className="card-head"><h2>Pick a stock</h2><span className="muted tiny">see its price + event web</span></div>
-          <div className="holdings-list">
-            {(positions || []).map((p) => (
-              <button className="holding-row" key={p.symbol} onClick={() => onPickSymbol(p.symbol)}>
+          <div className="card-head"><h2>Top 25 U.S. stocks</h2></div>
+          <label className="stock-search">
+            <span className="sr-only">Search stocks</span>
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search by ticker or company"
+            />
+          </label>
+          <div className="holdings-list explore-stock-list">
+            {filteredStocks.map((stock) => (
+              <button className="holding-row" key={stock.symbol} onClick={() => onPickSymbol(stock.symbol)}>
                 <div className="hr-left">
-                  <div className="hr-sym">{p.symbol}</div>
-                  <div className="hr-name muted tiny">{stocks?.[p.symbol]?.name}</div>
+                  <div className="hr-sym">{stock.symbol}</div>
+                  <div className="hr-name muted tiny">{stock.name}</div>
                 </div>
-                <div className="hr-val">{usd(p.value)}</div>
-                <div className={`hr-day ${plClass(p.dayChange)}`}>{signedPct(p.dayChangePct)}</div>
+                {stock.position && <div className="hr-val">{usd(stock.position.value)}</div>}
+                {stock.position && <div className={`hr-day ${plClass(stock.position.dayChange)}`}>{signedPct(stock.position.dayChangePct)}</div>}
                 <div className="hr-arrow muted">›</div>
               </button>
             ))}
+            {!filteredStocks.length && <div className="explore-empty muted">No stocks match “{query}”.</div>}
           </div>
         </div>
       </div>
     );
   }
 
-  const stockEvents = subgraph.nodes.filter((n) => n.type === 'event');
+  const stockEvents = (subgraph?.nodes || []).filter((n) => n.type === 'event');
+  const displayName = name || topStocks.find((stock) => stock.symbol === symbol)?.name || symbol;
 
   return (
     <div className="stockview">
@@ -61,7 +98,7 @@ export default function ExploreTab({
         {onBack && <button className="back-btn" onClick={onBack}>← Back to {backLabel}</button>}
         <div className="sv-id">
           <span className="sv-ticker">{symbol}</span>
-          <span className="muted">{name}</span>
+          <span className="muted">{displayName}</span>
         </div>
         {position && (
           <div className="sv-price">
@@ -71,19 +108,28 @@ export default function ExploreTab({
         )}
       </header>
 
-      <div className="sv-chart card">
-        <StockDetail symbol={symbol} name={name} />
+      <div className="explore-view-tabs" role="tablist" aria-label={`${symbol} views`}>
+        <button role="tab" aria-selected={activeView === 'chart'} className={activeView === 'chart' ? 'active' : ''} onClick={() => setActiveView('chart')}>Stock chart</button>
+        <button role="tab" aria-selected={activeView === 'events'} className={activeView === 'events' ? 'active' : ''} onClick={() => setActiveView('events')}>Bubble map & events</button>
       </div>
 
-      <div className="sv-map-row">
-        <div className="sv-map card" ref={stageRef}>
-          <div className="sv-map-title">Event web for {symbol} — what moved it & why</div>
-          <ConnectionWeb
-            graph={subgraph}
+      {activeView === 'chart' && (
+        <div className="sv-chart card">
+          {stocks?.[symbol]
+            ? <StockDetail symbol={symbol} name={displayName} />
+            : <div className="explore-empty muted">Historical chart data is not available for {symbol} yet.</div>}
+        </div>
+      )}
+
+      {activeView === 'events' && (
+        <div className="sv-map-row">
+          <div className="sv-map card" ref={stageRef}>
+          <ExploreConnectionWeb
+            graph={subgraph || { nodes: [], edges: [] }}
             selectedId={selectedEvent?.id}
             onSelect={onSelect}
             width={size.w}
-            height={size.h - 34}
+            height={size.h}
           />
         </div>
 
@@ -94,7 +140,7 @@ export default function ExploreTab({
             })} enrich={enrich} />
           ) : (
             <div className="card sv-eventlist">
-              <div className="card-head"><h2>{stockEvents.length} events</h2><span className="muted tiny">tap a bubble or row</span></div>
+              <div className="card-head"><h2>{stockEvents.length} events</h2><span className="muted tiny">Tap a bubble or row</span></div>
               {stockEvents
                 .map((n) => eventsById[n.id])
                 .filter(Boolean)
@@ -114,7 +160,8 @@ export default function ExploreTab({
             </div>
           )}
         </aside>
-      </div>
+        </div>
+      )}
     </div>
   );
 }
