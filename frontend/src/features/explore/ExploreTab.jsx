@@ -1,7 +1,6 @@
 import { usd, signedPct, plClass } from '../../api.js';
 import { useEffect, useMemo, useState } from 'react';
 import { tierColor, categoryLabel } from '../../shared/theme.js';
-import { useStageSize } from '../../shared/graphUtils.js';
 import ExploreConnectionWeb from './ExploreConnectionWeb.jsx';
 import EventPanel from '../../shared/EventPanel.jsx';
 import StockDetail from './StockDetail.jsx';
@@ -36,7 +35,6 @@ export default function ExploreTab({
   backLabel,
   enrich,
 }) {
-  const [stageRef, size] = useStageSize();
   const [query, setQuery] = useState('');
   const [activeView, setActiveView] = useState('chart');
   const topStocks = useMemo(() => TOP_US_STOCKS.map((stock) => ({
@@ -123,43 +121,41 @@ export default function ExploreTab({
 
       {activeView === 'events' && (
         <div className="sv-map-row">
-          <div className="sv-map card" ref={stageRef}>
-          <ExploreConnectionWeb
-            graph={subgraph || { nodes: [], edges: [] }}
-            selectedId={selectedEvent?.id}
-            onSelect={onSelect}
-            width={size.w}
-            height={size.h}
-          />
-        </div>
+          <div className="sv-map card">
+            <ExploreConnectionWeb
+              graph={subgraph || { nodes: [], edges: [] }}
+              selectedId={selectedEvent?.id}
+              onSelect={onSelect}
+            />
+          </div>
 
-        <aside className="sv-side">
-          {selectedEvent ? (
-            <EventPanel event={selectedEvent} related={related} onPick={onSelect && ((id) => {
-              if (eventsById[id]) onSelect({ id, type: 'event' });
-            })} enrich={enrich} />
-          ) : (
-            <div className="card sv-eventlist">
-              <div className="card-head"><h2>{stockEvents.length} events</h2><span className="muted tiny">Tap a bubble or row</span></div>
-              {stockEvents
-                .map((n) => eventsById[n.id])
-                .filter(Boolean)
-                .sort((a, b) => b.ts - a.ts)
-                .map((e) => {
-                  const im = e.impacts.find((i) => i.ticker === symbol);
-                  return (
-                    <button className="feed-row" key={e.id} onClick={() => onSelect({ id: e.id, type: 'event' })}>
-                      <span className="feed-dot" style={{ background: tierColor(im?.tier || e.confidence_tier) }} />
-                      <div className="feed-body">
-                        <div className="feed-head">{e.headline}</div>
-                        <div className="muted tiny">{e.date.slice(0, 10)} · {categoryLabel(e.category)} · {im?.tier}</div>
-                      </div>
-                    </button>
-                  );
-                })}
-            </div>
-          )}
-        </aside>
+          <aside className="sv-side">
+            {selectedEvent ? (
+              <EventPanel event={selectedEvent} related={related} onPick={onSelect && ((id) => {
+                if (eventsById[id]) onSelect({ id, type: 'event' });
+              })} enrich={enrich} />
+            ) : (
+              <div className="card sv-eventlist">
+                <div className="card-head"><h2>{stockEvents.length} events</h2><span className="muted tiny">Tap a bubble or row</span></div>
+                {stockEvents
+                  .map((n) => eventsById[n.id])
+                  .filter(Boolean)
+                  .sort((a, b) => b.ts - a.ts)
+                  .map((e) => {
+                    const im = e.impacts.find((i) => i.ticker === symbol);
+                    return (
+                      <button className="feed-row" key={e.id} onClick={() => onSelect({ id: e.id, type: 'event' })}>
+                        <span className="feed-dot" style={{ background: tierColor(im?.tier || e.confidence_tier) }} />
+                        <div className="feed-body">
+                          <div className="feed-head">{e.headline}</div>
+                          <div className="muted tiny">{e.date.slice(0, 10)} · {categoryLabel(e.category)} · {im?.tier}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+              </div>
+            )}
+          </aside>
         </div>
       )}
     </div>
