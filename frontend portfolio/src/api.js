@@ -22,6 +22,29 @@ function sortByTsAsc(a, b) {
   return a.t - b.t;
 }
 
+// PostgREST caps a single response to its configured max-rows (commonly 1000) no matter
+// how large a .range() is requested, so a table this size has to be paged through instead
+// of fetched in one shot — otherwise the result silently truncates to the first page,
+// ordered globally across every ticker, and lops off the most recent dates.
+const MAX_PAGE_SIZE = 1000;
+
+async function fetchAllRows(supabase, table, orderColumn) {
+  const rows = [];
+  let offset = 0;
+  for (;;) {
+    const { data, error } = await supabase
+      .from(table)
+      .select('*')
+      .order(orderColumn)
+      .range(offset, offset + MAX_PAGE_SIZE - 1);
+    if (error) return { data: null, error };
+    rows.push(...data);
+    if (data.length < MAX_PAGE_SIZE) break;
+    offset += MAX_PAGE_SIZE;
+  }
+  return { data: rows, error: null };
+}
+
 async function loadRows() {
   const supabase = getSupabase();
   const [
@@ -37,7 +60,7 @@ async function loadRows() {
     supabase.from('demo_events').select('*').order('event_date'),
     supabase.from('demo_event_impacts').select('*').order('event_id'),
     supabase.from('demo_event_edges').select('*').order('source_event_id'),
-    supabase.from('demo_stock_bars').select('*').order('bar_ts').range(0, 10000),
+    fetchAllRows(supabase, 'demo_stock_bars', 'bar_ts'),
   ]);
 
   for (const result of [metaRes, holdingsRes, eventsRes, impactsRes, edgesRes, barsRes]) {
