@@ -1,4 +1,4 @@
-import { CATEGORY, tierColor } from './theme.js';
+import { tierColor, EVENT_COLOR } from './theme.js';
 
 // Secondary geographic view: event bubbles at real lat/lon on an equirectangular grid,
 // with connectors to a "market" hub (NYSE). No external tiles/tokens — pure SVG.
@@ -58,11 +58,11 @@ export default function GeoMap({ events, selectedId, onSelect, width, height }) 
         {HUB.name}
       </text>
 
-      {/* event bubbles */}
+      {/* event bubbles — uniform orange, same size for every event */}
       {events.map((e) => {
         const x = px(e.location.lon);
         const y = py(e.location.lat);
-        const r = 4 + Math.min(11, (e.magnitude || 0) * 1.4);
+        const r = 7;
         const sel = e.id === selectedId;
         return (
           <g key={e.id} onClick={() => onSelect({ id: e.id, type: 'event' })} style={{ cursor: 'pointer' }}>
@@ -71,9 +71,9 @@ export default function GeoMap({ events, selectedId, onSelect, width, height }) 
               cx={x}
               cy={y}
               r={r}
-              fill={tierColor(e.confidence_tier)}
+              fill={EVENT_COLOR}
               fillOpacity="0.85"
-              stroke={CATEGORY[e.category] || '#94a3b8'}
+              stroke={EVENT_COLOR}
               strokeWidth="1.5"
             />
           </g>

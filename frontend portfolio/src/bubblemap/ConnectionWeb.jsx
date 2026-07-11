@@ -1,6 +1,6 @@
 import { useRef, useMemo, useEffect } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
-import { TIER, CATEGORY, tierColor, EPICENTER_COLOR } from './theme.js';
+import { TIER, tierColor, EVENT_COLOR, stockPerfColor } from './theme.js';
 
 // The "web of connections": event nodes + stock nodes, edges tiered by confidence.
 export default function ConnectionWeb({ graph, selectedId, onSelect, width, height }) {
@@ -32,25 +32,34 @@ export default function ConnectionWeb({ graph, selectedId, onSelect, width, heig
     }
   }, [data]);
 
+  // Stock bubbles scale with how much that stock has been affected (total impact
+  // magnitude from touching events); event bubbles are all the same fixed size now.
+  const STOCK_MIN_RADIUS = 7;
+  const STOCK_MAX_RADIUS = 22;
+  const EVENT_RADIUS = 6;
+
   const radius = (node) =>
-    node.type === 'stock' ? 8 : 3.5 + Math.min(9, (node.magnitude || 0) * 1.3);
+    node.type === 'stock'
+      ? Math.min(STOCK_MAX_RADIUS, STOCK_MIN_RADIUS + (node.impactMagnitude || 0) * 0.9)
+      : EVENT_RADIUS;
 
   const nodeCanvasObject = (node, ctx, scale) => {
     const r = radius(node);
     const isSel = node.id === selectedId;
 
     if (node.type === 'stock') {
-      // Pulsing neon ring: the stock is the shock epicenter, same visual role in every view.
+      // Pulsing neon ring, colored by day performance: green for up, red for down.
+      const col = stockPerfColor(node.dayChangePct);
       const pulse = 0.65 + 0.35 * Math.sin(Date.now() / 500);
       ctx.save();
-      ctx.shadowColor = EPICENTER_COLOR;
+      ctx.shadowColor = col;
       ctx.shadowBlur = (14 + 8 * pulse) / scale;
       ctx.beginPath();
       ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
       ctx.fillStyle = '#0a0f1e';
       ctx.fill();
       ctx.lineWidth = 2.25 / scale;
-      ctx.strokeStyle = isSel ? '#ffffff' : EPICENTER_COLOR;
+      ctx.strokeStyle = isSel ? '#ffffff' : col;
       ctx.stroke();
       ctx.restore();
 
@@ -63,8 +72,7 @@ export default function ConnectionWeb({ graph, selectedId, onSelect, width, heig
       return;
     }
 
-    // event node — soft neon glow in its confidence-tier color
-    const col = tierColor(node.tier);
+    // event node — uniform orange glow, same size for every event
     if (isSel) {
       ctx.beginPath();
       ctx.arc(node.x, node.y, r + 4 / scale, 0, 2 * Math.PI);
@@ -73,16 +81,16 @@ export default function ConnectionWeb({ graph, selectedId, onSelect, width, heig
       ctx.stroke();
     }
     ctx.save();
-    ctx.shadowColor = col;
+    ctx.shadowColor = EVENT_COLOR;
     ctx.shadowBlur = (isSel ? 14 : 8) / scale;
     ctx.beginPath();
     ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
-    ctx.fillStyle = col;
+    ctx.fillStyle = EVENT_COLOR;
     ctx.globalAlpha = 0.85;
     ctx.fill();
     ctx.globalAlpha = 1;
     ctx.lineWidth = 1.5 / scale;
-    ctx.strokeStyle = CATEGORY[node.category] || '#94a3b8';
+    ctx.strokeStyle = EVENT_COLOR;
     ctx.stroke();
     ctx.restore();
   };
