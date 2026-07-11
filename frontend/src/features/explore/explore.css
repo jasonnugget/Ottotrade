@@ -11,6 +11,18 @@
 .sv-side { overflow-y: auto; min-height: 0; }
 .sv-eventlist .feed-row:last-child { border-bottom: none; }
 
+/* The force-graph canvas is sized from this element's measured box, so it has to fill
+   the map card — otherwise the graph renders at its fallback size and leaves dead space.
+   Explore keeps its own copy of the ripple backdrop rather than reaching into home.css. */
+.explore-web-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-radial-gradient(circle at 50% 50%, rgba(148,163,184,0.16) 0, rgba(148,163,184,0.16) 1px, transparent 1px, transparent 60px),
+    conic-gradient(from 0deg at 50% 50%, rgba(148,163,184,0.1) 0deg 1deg, transparent 1deg 30deg),
+    #0a0f1e;
+}
+
 /* The shell-owned scrubber is present below Explore; hide it only while this feature renders. */
 .app-content:has(.stockview) > .scrubber { display: none; }
 
