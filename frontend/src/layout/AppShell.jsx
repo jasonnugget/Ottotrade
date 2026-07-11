@@ -85,7 +85,7 @@ export default function AppShell() {
     [data.visibleGraph, exploreSymbol]
   );
 
-  const scrubberVisible = (tab === 'home' || tab === 'explore') && !!data.timeline;
+  const scrubberVisible = tab === 'explore' && !!data.timeline;
 
   return (
     <div className="app-shell">
