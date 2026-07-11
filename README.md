@@ -4,7 +4,7 @@ The current portfolio can now ship as a frontend-only Vercel deployment backed b
 
 ## What changed
 
-- `frontend portfolio` no longer needs the Express backend at runtime.
+- `frontend` no longer needs the Express backend at runtime.
 - The frontend reads public `demo_*` tables from Supabase directly.
 - The `backend` folder remains the source of the curated event data and cached market data used to generate the Supabase seed.
 
@@ -19,7 +19,7 @@ That file includes:
 
 ## 2. Generate the seed SQL
 
-From [frontend portfolio/package.json](/Users/jasonnguyen/Desktop/placeholder/frontend%20portfolio/package.json:1):
+From [frontend/package.json](/Users/rei/Ottotrade/frontend/package.json:1):
 
 ```bash
 npm run seed:supabase
@@ -40,7 +40,7 @@ So Vercel does not need the Node server or live Yahoo calls.
 
 ## 3. Set Vercel environment variables
 
-Use [frontend portfolio/.env.example](/Users/jasonnguyen/Desktop/placeholder/frontend%20portfolio/.env.example:1) as the template:
+Use [frontend/.env.example](/Users/rei/Ottotrade/frontend/.env.example:1) as the template:
 
 ```env
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
@@ -49,7 +49,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 
 ## 4. Vercel settings
 
-If your Vercel project root is `frontend portfolio`, use:
+If your Vercel project root is `frontend`, use:
 
 - Build command: `npm run build`
 - Output directory: `dist`

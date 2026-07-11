@@ -1,0 +1,201 @@
+.login-page {
+  --ink: #101b35;
+  min-height: 100vh;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 40px 20px;
+  color: #12203e;
+  background: #fff6ea url('./assets/login-waves.svg') center / cover no-repeat;
+}
+
+.login-page::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: '';
+  background:
+    radial-gradient(1100px 640px at 80% -10%, rgba(255, 213, 148, .5), transparent 60%),
+    radial-gradient(920px 580px at 8% 112%, rgba(255, 136, 52, .2), transparent 62%),
+    radial-gradient(760px 560px at 50% 40%, rgba(255, 250, 242, .55), transparent 72%);
+}
+
+.login-page__grid {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  opacity: .09;
+  background-image: linear-gradient(rgba(28, 48, 85, .05) 1px, transparent 1px), linear-gradient(90deg, rgba(28, 48, 85, .05) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: radial-gradient(circle at 50% 45%, black, transparent 76%);
+}
+
+.login-page__glow { position: absolute; z-index: -1; border-radius: 50%; filter: blur(12px); }
+.login-page__glow--one { width: 470px; height: 470px; top: -200px; left: -170px; background: rgba(255, 233, 156, .3); }
+.login-page__glow--two { width: 450px; height: 450px; right: -180px; bottom: -210px; background: rgba(255, 120, 40, .15); }
+
+/* Rising bubbles ambiance */
+.login-bubbles { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.login-bubbles span { position: absolute; bottom: -60px; border-radius: 50%; background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, .9), rgba(255, 236, 205, .35) 60%, rgba(255, 213, 158, .1)); box-shadow: inset 0 0 6px rgba(255, 255, 255, .55); opacity: 0; animation: bubble-rise linear infinite; }
+.login-bubbles span:nth-child(1) { left: 12%; width: 16px; height: 16px; animation-duration: 15s; animation-delay: -2s; }
+.login-bubbles span:nth-child(2) { left: 27%; width: 9px; height: 9px; animation-duration: 12s; animation-delay: -6s; }
+.login-bubbles span:nth-child(3) { left: 44%; width: 22px; height: 22px; animation-duration: 19s; animation-delay: -9s; }
+.login-bubbles span:nth-child(4) { left: 63%; width: 12px; height: 12px; animation-duration: 14s; animation-delay: -3s; }
+.login-bubbles span:nth-child(5) { left: 79%; width: 18px; height: 18px; animation-duration: 17s; animation-delay: -12s; }
+.login-bubbles span:nth-child(6) { left: 90%; width: 8px; height: 8px; animation-duration: 13s; animation-delay: -7s; }
+
+.login-card { position: relative; width: min(100%, 396px); padding: 30px 34px 26px; border: 1px solid rgba(255, 255, 255, .7); border-radius: 30px; background: linear-gradient(180deg, rgba(255, 255, 255, .93), rgba(255, 249, 241, .82)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 30px 70px -20px rgba(140, 68, 20, .32), 0 12px 26px -14px rgba(140, 68, 20, .18); backdrop-filter: blur(22px) saturate(1.08); transition: opacity .35s ease, transform .35s ease; }
+
+.mascot-stage { position: relative; z-index: 20; isolation: isolate; display: grid; height: 138px; margin: 4px 0 8px; place-items: center; }
+.mascot-swimmer { position: relative; z-index: 20; width: 156px; height: 156px; filter: drop-shadow(0 16px 13px rgba(255, 125, 17, .18)); }
+.mascot { position: relative; display: block; width: 100%; animation: mascot-bob 3.2s ease-in-out infinite; transform-origin: center bottom; }
+.mascot-stage__orb { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: #ffd14e; opacity: .8; animation: bubble 4.2s ease-in-out infinite; }
+.mascot-stage__orb--left { left: 69px; bottom: 24px; }
+.mascot-stage__orb--right { right: 58px; top: 32px; width: 7px; height: 7px; animation-delay: -1.6s; }
+/* Ink Otto expels after each propulsion, billowing up to fill the screen.
+   Each propulsion drops its ink further along his escape path. */
+.ink-transition { position: fixed; z-index: 40; inset: 0; overflow: hidden; pointer-events: none; }
+
+.ink-drop { position: absolute; z-index: 42; display: block; width: 14px; height: 14px; opacity: 0; border-radius: 52% 48% 55% 45%; background: radial-gradient(circle at 34% 30%, #4a5e90 0 10%, #1d305c 52%, #0d1a3a 100%); box-shadow: inset -2px -3px 5px rgba(7, 14, 33, .3), 0 3px 8px rgba(9, 16, 40, .3); transform: translate(-50%, -50%) scale(.2); filter: blur(.3px); }
+.ink-drop--two { width: 11px; height: 11px; }
+.ink-drop--three { width: 9px; height: 9px; }
+
+.ink-bloom { position: absolute; width: 160px; height: 160px; margin: -80px 0 0 -80px; opacity: 0; border-radius: 46% 54% 43% 57% / 54% 45% 55% 46%; background: radial-gradient(circle at 45% 40%, #15244a 0%, #0e1a38 55%, #0a1026 100%); transform: scale(0); transform-origin: center; filter: blur(2px); }
+.ink-bloom--one { border-radius: 52% 48% 57% 43% / 47% 55% 45% 53%; }
+.ink-bloom--two { border-radius: 43% 57% 48% 52% / 56% 44% 58% 42%; }
+.ink-bloom--three { border-radius: 55% 45% 50% 50% / 48% 52% 46% 54%; }
+
+/* the three propulsion drop points along Otto's path */
+.ink-bloom--one, .ink-drop--one { left: var(--ink-x, 50%); top: var(--ink-y, 62%); }
+.ink-bloom--two, .ink-drop--two { left: calc(var(--ink-x, 50%) + var(--swim-x, 0px) * .3); top: calc(var(--ink-y, 62%) + var(--swim-y, 0px) * .3); }
+.ink-bloom--three, .ink-drop--three { left: calc(var(--ink-x, 50%) + var(--swim-x, 0px) * .58); top: calc(var(--ink-y, 62%) + var(--swim-y, 0px) * .58); }
+
+.ink-flood { position: absolute; z-index: 41; left: var(--ink-x, 50%); top: var(--ink-y, 62%); width: 200px; height: 200px; margin: -100px 0 0 -100px; opacity: 0; border-radius: 50%; background: radial-gradient(circle at 46% 42%, #17233f 0%, #0e1526 52%, #0b0f19 100%); transform: scale(0); filter: blur(1px); }
+
+.login-card__heading { text-align: center; }
+.login-card__eyebrow { margin: 0 0 7px; color: #f48117; font-size: 11px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+.login-card h1 { margin: 0; color: #142442; font-size: clamp(25px, 4.4vw, 31px); letter-spacing: -.05em; line-height: 1.05; }
+.login-card__heading > p:last-child { margin: 9px auto 22px; max-width: 268px; color: #71809b; font-size: 13.5px; line-height: 1.55; }
+
+.login-form { display: grid; gap: 15px; }
+.login-form > label { display: grid; gap: 7px; color: #53627c; font-size: 12px; font-weight: 700; }
+.login-form__feedback { min-height: 0; margin: -8px 0 -4px; }
+.login-form__error, .login-form__notice { margin: 0; padding: 0 2px; font-size: 11.5px; font-weight: 650; line-height: 1.4; }
+.login-form__error { color: #ba4938; }
+.login-form__error::before { content: '•'; margin-right: 5px; }
+.login-form__notice { color: #39815e; }
+.login-form input[aria-invalid="true"] { border-color: rgba(202, 65, 49, .65); box-shadow: 0 0 0 3px rgba(202, 65, 49, .08); }
+.login-form input[type="email"], .login-form input[type="password"] { width: 100%; box-sizing: border-box; padding: 12px 13px; border: 1px solid #e0e5ef; border-radius: 11px; outline: none; color: #152340; background: rgba(249, 250, 253, .8); font: inherit; font-size: 14px; transition: border-color .2s, box-shadow .2s; }
+.login-form input::placeholder { color: #aab3c3; }
+.login-form input[type="email"]:focus, .login-form input[type="password"]:focus { border-color: #ff9b29; box-shadow: 0 0 0 4px rgba(255, 157, 41, .13); }
+.login-form__options { display: flex; align-items: center; justify-content: space-between; padding: 1px 0 3px; color: #687692; font-size: 12px; }
+.login-form__options a, .login-card__footer a { color: #e36e10; font-weight: 700; text-decoration: none; }
+.login-form__check { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.login-form__check input { accent-color: #f8891b; }
+.login-form__submit { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 48px; border: 0; border-radius: 12px; cursor: pointer; color: white; background: linear-gradient(135deg, #ffae23, #ff7417); box-shadow: 0 10px 22px rgba(247, 126, 25, .28); font: inherit; font-size: 14px; font-weight: 800; transition: transform .2s, box-shadow .2s; }
+.login-form__submit:hover:not(:disabled) { box-shadow: 0 14px 28px rgba(247, 126, 25, .36); transform: translateY(-2px); }
+.login-form__submit:disabled { cursor: wait; }
+.login-form__submit span { font-size: 20px; line-height: 0; }
+.login-card__footer { margin: 22px 0 0; text-align: center; color: #7d899e; font-size: 12px; }
+
+.login-page--departing .mascot-swimmer { animation: otto-swim 2s linear forwards; filter: drop-shadow(0 10px 16px rgba(122, 56, 8, .26)); }
+.login-page--departing .mascot { animation: otto-pulse 2s ease-in-out forwards; transform-origin: 50% 42%; }
+.login-page--departing .mascot-stage__orb { animation: none; opacity: 0; transition: opacity .25s; }
+/* a spurt of ink just after each of the three propulsions */
+.login-page--departing .ink-drop--one { animation: ink-spurt .55s ease-out .16s forwards; }
+.login-page--departing .ink-drop--two { animation: ink-spurt .55s ease-out .72s forwards; }
+.login-page--departing .ink-drop--three { animation: ink-spurt .55s ease-out 1.3s forwards; }
+/* each propulsion leaves an ink cloud that billows out and accumulates */
+.login-page--departing .ink-bloom--one { animation: ink-puff-a 2.15s cubic-bezier(.3, .1, .2, 1) .2s forwards; }
+.login-page--departing .ink-bloom--two { animation: ink-puff-b 1.6s cubic-bezier(.3, .1, .2, 1) .76s forwards; }
+.login-page--departing .ink-bloom--three { animation: ink-puff-c 1.05s cubic-bezier(.3, .1, .2, 1) 1.34s forwards; }
+.login-page--departing .ink-flood { animation: ink-flood .98s cubic-bezier(.42, .05, .35, 1) 1.42s forwards; }
+.login-page--departing .login-card { animation: card-sink 2s ease-in forwards; }
+
+@keyframes mascot-bob { 0%, 100% { transform: translateY(5px) rotate(-1.2deg); } 50% { transform: translateY(-9px) rotate(1.2deg); } }
+@keyframes bubble { 0%, 100% { transform: translate(0, 0) scale(.7); opacity: 0; } 30% { opacity: .75; } 75% { transform: translate(10px, -34px) scale(1); opacity: 0; } }
+/* Octopus jet propulsion: three quick thrusts, each followed by a coast.
+   Per-segment easing gives the burst-then-glide rhythm. */
+@keyframes otto-swim {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; animation-timing-function: cubic-bezier(.12, .82, .3, 1); }
+  10% { transform: translate(calc(var(--swim-x) * .12), calc(var(--swim-y) * .08)) rotate(8deg) scale(.85); animation-timing-function: cubic-bezier(.5, 0, .86, .5); }
+  30% { transform: translate(calc(var(--swim-x) * .19), calc(var(--swim-y) * .13)) rotate(10deg) scale(.81); animation-timing-function: cubic-bezier(.12, .82, .3, 1); }
+  40% { transform: translate(calc(var(--swim-x) * .4), calc(var(--swim-y) * .3)) rotate(18deg) scale(.58); animation-timing-function: cubic-bezier(.5, 0, .86, .5); }
+  60% { transform: translate(calc(var(--swim-x) * .48), calc(var(--swim-y) * .38)) rotate(20deg) scale(.53); opacity: 1; animation-timing-function: cubic-bezier(.12, .82, .3, 1); }
+  70% { transform: translate(calc(var(--swim-x) * .77), calc(var(--swim-y) * .68)) rotate(26deg) scale(.28); opacity: .82; animation-timing-function: cubic-bezier(.5, 0, .9, .5); }
+  100% { transform: translate(var(--swim-x), var(--swim-y)) rotate(30deg) scale(.06); opacity: 0; }
+}
+
+/* Mantle contracts then the body stretches on each of the three thrusts */
+@keyframes otto-pulse {
+  0% { transform: scaleX(1) scaleY(1); }
+  4% { transform: scaleX(1.14) scaleY(.8); }
+  11% { transform: scaleX(.83) scaleY(1.2); }
+  24% { transform: scaleX(1.02) scaleY(.99); }
+  30% { transform: scaleX(1.14) scaleY(.8); }
+  38% { transform: scaleX(.83) scaleY(1.2); }
+  52% { transform: scaleX(1.02) scaleY(.99); }
+  60% { transform: scaleX(1.14) scaleY(.8); }
+  68% { transform: scaleX(.83) scaleY(1.2); }
+  100% { transform: scaleX(1) scaleY(1); }
+}
+
+/* Small ink spurt ejected backward at each thrust */
+@keyframes ink-spurt {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.2); }
+  30% { opacity: .9; transform: translate(-50%, -50%) translate(-10px, 11px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) translate(-32px, 42px) scale(1.6); }
+}
+
+/* Ink clouds that billow from each propulsion and gradually fill the screen */
+@keyframes ink-puff-a {
+  0% { opacity: 0; transform: translate(0, 0) scale(0); }
+  10% { opacity: .9; transform: translate(-3px, 6px) scale(1.2); }
+  40% { opacity: .93; transform: translate(-24px, 28px) scale(3.2); }
+  100% { opacity: .96; transform: translate(-70px, 82px) scale(6); }
+}
+
+@keyframes ink-puff-b {
+  0% { opacity: 0; transform: translate(0, 0) scale(0); }
+  10% { opacity: .9; transform: translate(5px, -2px) scale(1.1); }
+  40% { opacity: .93; transform: translate(26px, -12px) scale(3.2); }
+  100% { opacity: .96; transform: translate(66px, -30px) scale(6.5); }
+}
+
+@keyframes ink-puff-c {
+  0% { opacity: 0; transform: translate(0, 0) scale(0); }
+  12% { opacity: .9; transform: translate(2px, -4px) scale(1); }
+  100% { opacity: .96; transform: translate(80px, -58px) scale(6); }
+}
+
+@keyframes ink-flood {
+  0% { opacity: 0; transform: scale(0); }
+  20% { opacity: .85; transform: scale(3); }
+  60% { opacity: 1; transform: scale(14); }
+  100% { opacity: 1; transform: scale(32); }
+}
+
+@keyframes card-sink {
+  0%, 68% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(.965); }
+}
+
+@keyframes bubble-rise {
+  0% { transform: translateY(0) translateX(0) scale(.6); opacity: 0; }
+  12% { opacity: .7; }
+  70% { opacity: .5; }
+  100% { transform: translateY(-108vh) translateX(26px) scale(1); opacity: 0; }
+}
+
+@media (max-width: 520px) { .login-page { padding: 18px; } .login-card { padding: 24px 22px 22px; border-radius: 26px; } .mascot-stage { height: 124px; } .mascot-swimmer { width: 140px; height: 140px; } .login-form__options { font-size: 11px; } }
+@media (prefers-reduced-motion: reduce) {
+  .mascot, .mascot-stage__orb, .login-bubbles span { animation: none; }
+  .login-page--departing .mascot-swimmer, .login-page--departing .mascot, .login-page--departing .ink-drop, .login-page--departing .ink-bloom { animation: none; }
+  .login-page--departing .mascot-swimmer { opacity: 0; transition: opacity .3s; }
+  .login-page--departing .ink-flood { animation: none; opacity: 1; transform: scale(30); }
+  .login-page--departing .login-card { opacity: 0; transition: opacity .3s; }
+}
+
+.terminal-brand-mascot { width: 34px; height: 34px; object-fit: contain; filter: drop-shadow(0 3px 5px rgba(255, 125, 17, .25)); }

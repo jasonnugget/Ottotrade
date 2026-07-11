@@ -1,4 +1,4 @@
-import { getSupabase } from './supabase.js';
+import { getPublicSupabase } from './supabase.js';
 
 const DAY = 86400;
 const TIMEFRAMES = ['1D', '1W', '1M', '3M', '6M', 'YTD', '1Y', 'SINCE'];
@@ -22,31 +22,32 @@ function sortByTsAsc(a, b) {
   return a.t - b.t;
 }
 
-// PostgREST caps a single response to its configured max-rows (commonly 1000) no matter
-// how large a .range() is requested, so a table this size has to be paged through instead
-// of fetched in one shot — otherwise the result silently truncates to the first page,
-// ordered globally across every ticker, and lops off the most recent dates.
+// PostgREST caps a single response to its configured max-rows (commonly 1000),
+// so stock bars must be fetched page by page to avoid silently truncating chart data.
 const MAX_PAGE_SIZE = 1000;
 
 async function fetchAllRows(supabase, table, orderColumn) {
   const rows = [];
   let offset = 0;
+
   for (;;) {
     const { data, error } = await supabase
       .from(table)
       .select('*')
       .order(orderColumn)
       .range(offset, offset + MAX_PAGE_SIZE - 1);
+
     if (error) return { data: null, error };
     rows.push(...data);
     if (data.length < MAX_PAGE_SIZE) break;
     offset += MAX_PAGE_SIZE;
   }
+
   return { data: rows, error: null };
 }
 
 async function loadRows() {
-  const supabase = getSupabase();
+  const supabase = getPublicSupabase();
   const [
     metaRes,
     holdingsRes,
