@@ -37,6 +37,8 @@
 .rh-sym { font-weight: 700; }
 .rh-price { color: var(--muted); }
 .rh-day { text-align: right; font-weight: 600; min-width: 60px; }
+.rh-more { align-self: flex-start; margin-top: 6px; background: transparent; border: none; color: var(--accent); font-size: 12px; font-weight: 600; cursor: pointer; padding: 4px 0; }
+.rh-more:hover { text-decoration: underline; }
 
 @media (max-width: 900px) {
   .rh-panel { grid-template-columns: 1fr; }

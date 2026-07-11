@@ -1,9 +1,21 @@
 import { useMemo } from 'react';
 import { usd, signedUsd, signedPct, plClass } from '../../api.js';
 
+// Only the biggest movers show here — as the portfolio grows this keeps the mini
+// panel from needing to scroll. "More" links out to the full Portfolio tab.
+const MAX_HOLDINGS_SHOWN = 5;
+
 // Minimal Robinhood-style portfolio card. Big value tracks the timeline scrubber.
-export default function RobinhoodPanel({ timeline, currentTs, live }) {
+export default function RobinhoodPanel({ timeline, currentTs, live, onOpenPortfolio }) {
   const points = timeline?.points || [];
+
+  const topMovers = useMemo(
+    () =>
+      [...(live?.positions || [])]
+        .sort((a, b) => Math.abs(b.dayChangePct || 0) - Math.abs(a.dayChangePct || 0))
+        .slice(0, MAX_HOLDINGS_SHOWN),
+    [live]
+  );
 
   const { value, series, atDate } = useMemo(() => {
     if (!points.length) return { value: null, series: [], atDate: null };
@@ -52,13 +64,14 @@ export default function RobinhoodPanel({ timeline, currentTs, live }) {
       </div>
 
       <div className="rh-holdings">
-        {(live?.positions || []).map((p) => (
+        {topMovers.map((p) => (
           <div className="rh-holding" key={p.symbol}>
             <div className="rh-sym">{p.symbol}</div>
             <div className="rh-price">{usd(p.price)}</div>
             <div className={`rh-day ${plClass(p.dayChange)}`}>{signedPct(p.dayChangePct)}</div>
           </div>
         ))}
+        <button className="rh-more" onClick={onOpenPortfolio}>more</button>
       </div>
     </div>
   );

@@ -44,6 +44,7 @@ export default function AppShell() {
     setTab(nextTab);
   };
   const openHome = () => selectTab('home');
+  const openPortfolio = () => selectTab('portfolio');
 
   const openStock = (symbol) => {
     setSelected(null);
@@ -105,6 +106,7 @@ export default function AppShell() {
             currentTs={data.currentTs}
             onSelectEvent={setSelected}
             onOpenStock={openStock}
+            onOpenPortfolio={openPortfolio}
             enrich={data.enrichFor(selectedEvent ? selectedEvent.id : '_')}
           />
         )}

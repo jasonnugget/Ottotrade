@@ -16,6 +16,7 @@ export default function HomeTab({
   currentTs,
   onSelectEvent,
   onOpenStock,
+  onOpenPortfolio,
 }) {
   const [mode, setMode] = useState('web');
   const [stageRef, size] = useStageSize();
@@ -49,7 +50,7 @@ export default function HomeTab({
       </div>
 
       <div className="bm-footer">
-        <RobinhoodPanel timeline={timeline} currentTs={currentTs} live={live} />
+        <RobinhoodPanel timeline={timeline} currentTs={currentTs} live={live} onOpenPortfolio={onOpenPortfolio} />
       </div>
     </div>
   );
