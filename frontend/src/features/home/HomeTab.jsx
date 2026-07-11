@@ -54,16 +54,18 @@ export default function HomeTab({
 
       <div className="bm-footer">
         <RobinhoodPanel timeline={timeline} currentTs={currentTs} live={live} />
-        {selectedEvent ? (
-          <EventPanel
-            event={selectedEvent}
-            related={related}
-            onPick={(id) => (eventsById[id] ? onSelectEvent({ id, type: 'event' }) : onOpenStock(id))}
-            enrich={enrich}
-          />
-        ) : (
-          <div className="ep-empty muted tiny">Click a bubble for its confidence tier and causal reasoning.</div>
-        )}
+        <div className="bm-footer-side">
+          {selectedEvent ? (
+            <EventPanel
+              event={selectedEvent}
+              related={related}
+              onPick={(id) => (eventsById[id] ? onSelectEvent({ id, type: 'event' }) : onOpenStock(id))}
+              enrich={enrich}
+            />
+          ) : (
+            <div className="ep-empty muted tiny">Click a bubble for its confidence tier and causal reasoning.</div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useRef, useMemo, useEffect } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
-import { forceX, forceY } from 'd3-force-3d';
+import { forceX, forceY, forceCollide } from 'd3-force-3d';
 import { TIER, tierColor, EVENT_COLOR, stockPerfColor } from './theme.js';
 
 // The "web of connections": event nodes + stock nodes, edges tiered by confidence.
@@ -26,20 +26,29 @@ export default function ConnectionWeb({ graph, selectedId, onSelect, width, heig
   useEffect(() => {
     const fg = fgRef.current;
     if (!fg || !data.nodes.length) return;
-    fg.d3Force('charge')?.strength(-140);
+    fitted.current = false; // new graph data means a fresh layout to settle and fit
+    fg.d3Force('charge')?.strength(-160);
     // A weak pull toward center so nodes with no remaining links (e.g. a stock whose
     // only event connections were "unrelated" and got filtered out) don't drift off
     // into empty space under charge repulsion alone — barely affects linked nodes,
     // which are already held in place by much stronger link forces.
     fg.d3Force('centerX', forceX(0).strength(0.02));
     fg.d3Force('centerY', forceY(0).strength(0.02));
-    // Fit once on first populated render; don't re-zoom on every scrubber step.
-    if (!fitted.current) {
-      fitted.current = true;
-      const t = setTimeout(() => fg.zoomToFit(500, 60), 400);
-      return () => clearTimeout(t);
-    }
+    // Hard floor on how close any two bubbles' centers can get, sized to their own
+    // radius plus a little breathing room — this is what actually guarantees no
+    // overlap, since charge repulsion alone doesn't stop linked nodes from settling
+    // close together.
+    fg.d3Force('collide', forceCollide((node) => radius(node) + 8));
   }, [data]);
+
+  // Wait for the layout to actually settle before fitting the view, so the first
+  // thing a user sees already has every bubble visible and non-overlapping —
+  // fitting on a timer risked catching the simulation mid-motion.
+  const handleEngineStop = () => {
+    if (fitted.current) return;
+    fitted.current = true;
+    fgRef.current?.zoomToFit(400, 40);
+  };
 
   // Stock bubbles scale with how much that stock has been affected (total impact
   // magnitude from touching events); event bubbles are all the same fixed size now.
@@ -168,6 +177,7 @@ export default function ConnectionWeb({ graph, selectedId, onSelect, width, heig
         }
         onNodeClick={(n) => onSelect(n)}
         onBackgroundClick={() => onSelect(null)}
+        onEngineStop={handleEngineStop}
       />
     </div>
   );

@@ -8,8 +8,9 @@
 .view-tabs button { background: var(--card2); color: var(--muted); border: 1px solid var(--border); border-radius: 7px; padding: 5px 12px; font-size: 12px; cursor: pointer; }
 .view-tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-.bm-stage { position: relative; background: #0b1020; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; min-height: 650px; }
-.bm-footer { display: grid; grid-template-columns: 1fr 300px; gap: 12px; align-items: start; }
+.bm-stage { position: relative; background: #0b1020; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; flex: 1; min-height: 280px; }
+.bm-footer { flex: 0 0 190px; display: grid; grid-template-columns: 1fr 300px; gap: 12px; min-height: 0; }
+.bm-footer-side { height: 100%; overflow-y: auto; }
 
 /* Wireframe dome behind the bubble map / event web, echoing map.png's ripple backdrop. */
 .web-backdrop {
@@ -28,7 +29,7 @@
 .legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
 
 /* robinhood-style mini portfolio card in the side panel (value primitives are in shared/shared.css) */
-.rh-panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.rh-panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; height: 100%; overflow-y: auto; }
 .rh-spark { width: 100%; height: 56px; margin: 10px 0 6px; display: block; }
 .rh-holdings { margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px; display: flex; flex-direction: column; gap: 2px; }
 .rh-holding { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 4px 0; font-size: 13px; }
@@ -37,6 +38,6 @@
 .rh-day { text-align: right; font-weight: 600; min-width: 60px; }
 
 @media (max-width: 900px) {
-  .bm-footer { grid-template-columns: 1fr; }
+  .bm-footer { grid-template-columns: 1fr; flex: 0 0 auto; }
   .bm-stage { min-height: 420px; }
 }
