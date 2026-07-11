@@ -1,0 +1,5 @@
+/* ===== Guidance tab — owned by whoever builds Guidance. ===== */
+.guidance-tab { display: flex; flex-direction: column; gap: 14px; padding-bottom: 20px; }
+.guidance-header h1 { margin: 0; font-size: 20px; }
+.guidance-header p { margin: 2px 0 0; }
+.guidance-empty code { background: var(--card2); padding: 1px 5px; border-radius: 4px; }

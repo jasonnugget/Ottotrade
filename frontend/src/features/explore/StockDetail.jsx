@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createChart } from 'lightweight-charts';
-import { api, usd } from '../api.js';
+import { api, usd } from '../../api.js';
 
 const TIMEFRAMES = ['1M', '3M', '6M', '1Y', 'SINCE'];
 

@@ -1,0 +1,17 @@
+/* ===== Portfolio tab — owned by whoever redesigns Portfolio. ===== */
+.home { display: flex; flex-direction: column; gap: 14px; padding-bottom: 20px; }
+
+.port-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.port-title h1 { margin: 0; font-size: 20px; }
+.port-title p { margin: 2px 0 0; }
+
+.web-cta { background: linear-gradient(90deg,#6366f1,#8b5cf6); color:#fff; border:none; border-radius:9px; padding:10px 16px; font-size:13px; font-weight:600; cursor:pointer; }
+
+.home-hero { padding: 18px 20px; }
+.home-hero .rh-value { font-size: 38px; }
+.day-chip { margin-left: 10px; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,0.06); }
+.home-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+@media (max-width: 820px) {
+  .home-cols { grid-template-columns: 1fr; }
+}

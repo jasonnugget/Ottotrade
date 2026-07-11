@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { TIER } from './theme.js';
-import { useStageSize } from './graphUtils.js';
-import ConnectionWeb from './ConnectionWeb.jsx';
+import { TIER } from '../../shared/theme.js';
+import { useStageSize } from '../../shared/graphUtils.js';
+import ConnectionWeb from '../../shared/ConnectionWeb.jsx';
+import EventPanel from '../../shared/EventPanel.jsx';
 import GeoMap from './GeoMap.jsx';
 import RobinhoodPanel from './RobinhoodPanel.jsx';
-import EventPanel from './EventPanel.jsx';
+import './home.css';
 
-// All-stocks bubble map. Clicking a stock node drills into that stock.
-export default function WebView({
+// All-stocks bubble map — the "event web". Clicking a stock node drills into Explore.
+export default function HomeTab({
   graph,
   visibleEvents,
   eventsById,
@@ -18,7 +19,6 @@ export default function WebView({
   currentTs,
   onSelectEvent,
   onOpenStock,
-  onBack,
   enrich,
 }) {
   const [mode, setMode] = useState('web');
@@ -33,12 +33,9 @@ export default function WebView({
   return (
     <div className="webview">
       <header className="bm-header">
-        <div className="bm-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button className="back-btn" onClick={onBack}>← Portfolio</button>
-          <div>
-            <h1>Event Web — all stocks</h1>
-            <p className="muted tiny">Click a stock to drill in · a bubble to see the reasoning</p>
-          </div>
+        <div className="bm-title">
+          <h1>Event Web — all stocks</h1>
+          <p className="muted tiny">Click a stock to drill in · a bubble to see the reasoning</p>
         </div>
         <div className="view-tabs">
           <button className={mode === 'web' ? 'active' : ''} onClick={() => setMode('web')}>◕ Web</button>

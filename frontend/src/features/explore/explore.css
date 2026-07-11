@@ -1,0 +1,31 @@
+/* ===== Explore tab (single-stock drill-in) — owned by whoever builds Explore. ===== */
+.stockview { flex: 1; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+
+.sv-header { display: flex; align-items: center; gap: 14px; }
+.sv-id { display: flex; align-items: baseline; gap: 8px; }
+.sv-ticker { font-size: 22px; font-weight: 700; }
+.sv-price { margin-left: auto; font-size: 16px; font-weight: 600; }
+.sv-chart { padding: 12px 14px; }
+.sv-map-row { flex: 1; display: grid; grid-template-columns: 1fr 340px; gap: 12px; min-height: 0; }
+.sv-map { position: relative; padding: 0; overflow: hidden; min-height: 320px; }
+.sv-map-title { position: absolute; top: 8px; left: 12px; z-index: 2; font-size: 12px; color: var(--muted); }
+.sv-side { overflow-y: auto; min-height: 0; }
+.sv-eventlist .feed-row:last-child { border-bottom: none; }
+
+/* stock price chart (StockDetail) */
+.stock-detail { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.sd-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.sd-head h3 { margin: 0; font-size: 15px; }
+.sd-head .muted { font-weight: 400; font-size: 12px; }
+.sd-chart { width: 100%; }
+.tf-toggle { display: flex; flex-wrap: wrap; gap: 4px; }
+.tf-toggle button {
+  background: var(--card2); color: var(--muted); border: 1px solid var(--border);
+  border-radius: 6px; padding: 3px 8px; font-size: 11px; cursor: pointer;
+}
+.tf-toggle button:hover { color: var(--text); }
+.tf-toggle button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+@media (max-width: 900px) {
+  .sv-map-row { grid-template-columns: 1fr; }
+}

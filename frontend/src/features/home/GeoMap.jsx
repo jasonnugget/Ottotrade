@@ -1,4 +1,4 @@
-import { tierColor, EVENT_COLOR } from './theme.js';
+import { tierColor, EVENT_COLOR } from '../../shared/theme.js';
 
 // Secondary geographic view: event bubbles at real lat/lon on an equirectangular grid,
 // with connectors to a "market" hub (NYSE). No external tiles/tokens — pure SVG.

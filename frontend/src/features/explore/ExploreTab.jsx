@@ -1,30 +1,61 @@
-import { usd, signedPct, plClass } from '../api.js';
-import { tierColor, categoryLabel } from './theme.js';
-import { useStageSize } from './graphUtils.js';
-import ConnectionWeb from './ConnectionWeb.jsx';
+import { usd, signedPct, plClass } from '../../api.js';
+import { tierColor, categoryLabel } from '../../shared/theme.js';
+import { useStageSize } from '../../shared/graphUtils.js';
+import ConnectionWeb from '../../shared/ConnectionWeb.jsx';
+import EventPanel from '../../shared/EventPanel.jsx';
 import StockDetail from './StockDetail.jsx';
-import EventPanel from './EventPanel.jsx';
+import './explore.css';
 
 // Drill-in for one stock: price chart + a bubble map of the events that moved it.
-export default function StockView({
+// symbol is null until a stock is picked (from the picker below, or via onOpenStock
+// from another tab) — this is a standalone sidebar tab, not just a drill-in anymore.
+export default function ExploreTab({
   symbol,
   name,
   subgraph,
   eventsById,
   position,
+  positions,
+  stocks,
   selectedEvent,
   related,
   onSelect,
-  onBack,
+  onPickSymbol,
   enrich,
 }) {
   const [stageRef, size] = useStageSize();
+
+  if (!symbol) {
+    return (
+      <div className="stockview">
+        <header className="sv-header">
+          <div className="sv-id"><span className="sv-ticker">Explore</span></div>
+        </header>
+        <div className="card">
+          <div className="card-head"><h2>Pick a stock</h2><span className="muted tiny">see its price + event web</span></div>
+          <div className="holdings-list">
+            {(positions || []).map((p) => (
+              <button className="holding-row" key={p.symbol} onClick={() => onPickSymbol(p.symbol)}>
+                <div className="hr-left">
+                  <div className="hr-sym">{p.symbol}</div>
+                  <div className="hr-name muted tiny">{stocks?.[p.symbol]?.name}</div>
+                </div>
+                <div className="hr-val">{usd(p.value)}</div>
+                <div className={`hr-day ${plClass(p.dayChange)}`}>{signedPct(p.dayChangePct)}</div>
+                <div className="hr-arrow muted">›</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const stockEvents = subgraph.nodes.filter((n) => n.type === 'event');
 
   return (
     <div className="stockview">
       <header className="sv-header">
-        <button className="back-btn" onClick={onBack}>← Portfolio</button>
         <div className="sv-id">
           <span className="sv-ticker">{symbol}</span>
           <span className="muted">{name}</span>

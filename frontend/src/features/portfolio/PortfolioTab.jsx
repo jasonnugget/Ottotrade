@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
-import { usd, signedUsd, signedPct, plClass, pct } from '../api.js';
-import { tierColor, categoryLabel } from './theme.js';
+import { usd, signedUsd, signedPct, plClass, pct } from '../../api.js';
+import { tierColor, categoryLabel } from '../../shared/theme.js';
 import PortfolioChart from './PortfolioChart.jsx';
+import './portfolio.css';
 
-// Robinhood-style home: portfolio value, chart, clickable holdings, event feed.
-export default function HomeDashboard({ live, timeline, events, stocks, onOpenStock, onOpenWeb, onOpenEvent }) {
+// Robinhood-style portfolio dashboard: value, chart, clickable holdings, event feed.
+export default function PortfolioTab({ live, timeline, events, stocks, onOpenStock, onOpenWeb, onOpenEvent }) {
   const points = timeline?.points || [];
   const value = live?.currentValue ?? (points.length ? points[points.length - 1].value : null);
   const cost = live?.costBasis ?? 50000;
@@ -18,12 +19,12 @@ export default function HomeDashboard({ live, timeline, events, stocks, onOpenSt
 
   return (
     <div className="home">
-      <header className="bm-header">
-        <div className="bm-title">
+      <header className="port-header">
+        <div className="port-title">
           <h1>Portfolio</h1>
           <p className="muted tiny">Robinhood-style overview · click a stock to explore its event web</p>
         </div>
-        <button className="web-cta" onClick={onOpenWeb}>◕ Event Web — all stocks →</button>
+        <button className="web-cta" onClick={onOpenWeb}>◕ Home — event web →</button>
       </header>
 
       <div className="home-hero card">

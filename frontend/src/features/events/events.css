@@ -1,0 +1,10 @@
+/* ===== Events tab — owned by whoever builds Events. ===== */
+.events-tab { display: flex; flex-direction: column; gap: 14px; padding-bottom: 20px; }
+
+.events-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.events-header h1 { margin: 0; font-size: 20px; }
+.events-header p { margin: 2px 0 0; }
+
+.events-filters { display: flex; gap: 4px; }
+.events-filters button { background: var(--card2); color: var(--muted); border: 1px solid var(--border); border-radius: 7px; padding: 5px 12px; font-size: 12px; cursor: pointer; }
+.events-filters button.active { background: var(--accent); color: #fff; border-color: var(--accent); }

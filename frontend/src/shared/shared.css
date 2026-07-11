@@ -1,0 +1,75 @@
+/* ===== Shared primitives used by more than one sidebar tab. =====
+   Owned jointly — coordinate before renaming/removing a class here, since
+   Home, Explore, and Events all render these. */
+
+.back-btn { background: var(--card2); color: var(--text); border:1px solid var(--border); border-radius:8px; padding:7px 12px; font-size:13px; cursor:pointer; }
+.back-btn:hover { border-color: var(--accent); }
+
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; }
+
+/* portfolio-value display primitives — used by Portfolio's hero and Home's mini panel */
+.rh-label { font-size: 12px; }
+.rh-value { font-size: 30px; font-weight: 700; margin: 2px 0; }
+.rh-change { font-size: 15px; font-weight: 600; }
+.rh-pct { margin-left: 4px; }
+.rh-since { font-weight: 400; font-size: 12px; }
+
+/* clickable holdings row (Portfolio's holdings list, Explore's stock picker) */
+.holdings-list { display: flex; flex-direction: column; }
+.holding-row { display: grid; grid-template-columns: 1fr auto auto 16px; gap: 12px; align-items: center; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 11px 4px; cursor: pointer; text-align: left; color: var(--text); }
+.holding-row:hover { background: rgba(255,255,255,0.03); }
+.hr-sym { font-weight: 700; font-size: 15px; }
+.hr-val { font-variant-numeric: tabular-nums; }
+.hr-day { font-weight: 600; min-width: 56px; text-align: right; }
+.hr-arrow { font-size: 18px; }
+
+/* event feed row (Portfolio teaser, Events tab, Explore stock event list) */
+.feed { display: flex; flex-direction: column; }
+.feed-row { display: flex; gap: 10px; align-items: flex-start; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 10px 4px; cursor: pointer; text-align: left; color: var(--text); width: 100%; }
+.feed-row:hover { background: rgba(255,255,255,0.03); }
+.feed-dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.feed-body { flex: 1; min-width: 0; }
+.feed-head { font-size: 13px; line-height: 1.35; }
+.feed-mag { font-size: 12px; font-weight: 700; }
+.feed-mag.direct { color: var(--pos); }
+.feed-mag.indirect { color: #f59e0b; }
+.feed-mag.unrelated { color: var(--muted); }
+
+/* event detail panel (Home + Explore side panel) */
+.event-panel, .ep-empty { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.ep-empty { color: var(--muted); }
+.ep-cat { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.ep-headline { margin: 4px 0 6px; font-size: 15px; line-height: 1.35; }
+.ep-meta a { color: var(--accent); }
+.ep-impacts { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.ep-impact { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; cursor: pointer; }
+.ep-impact-head { display: flex; align-items: center; gap: 8px; }
+.ep-ticker { font-weight: 700; }
+.ep-tier { font-size: 10px; font-weight: 700; color: #06131f; padding: 1px 7px; border-radius: 999px; text-transform: uppercase; }
+.ep-move { margin-left: auto; font-size: 12px; font-weight: 700; }
+.ep-reasoning { margin-top: 6px; font-size: 12.5px; line-height: 1.45; color: #cbd5e1; }
+.ep-related { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+.ep-related-btn { text-align: left; background: transparent; border: 1px dashed var(--border); border-radius: 7px; color: var(--text); padding: 6px 8px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.ep-related-btn:hover { border-color: var(--accent); }
+.ep-ai { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+.ai-btn { width: 100%; background: linear-gradient(90deg, #6366f1, #8b5cf6); color: #fff; border: none; border-radius: 8px; padding: 9px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.ai-btn:disabled { opacity: 0.6; cursor: default; }
+.ep-ai-note { margin-top: 8px; }
+.ep-ai-note code { background: var(--card2); padding: 1px 5px; border-radius: 4px; }
+.ep-ai-result { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+
+/* timeline scrubber (shown under Home + Explore) */
+.scrubber { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "controls track" ". ends"; align-items: center; column-gap: 16px; row-gap: 2px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 18px; }
+.scrubber-controls { grid-area: controls; display: flex; align-items: center; gap: 12px; }
+.play-btn { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.play-btn:hover { filter: brightness(1.1); }
+.scrubber-date { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; min-width: 96px; }
+.scrubber-track-wrap { grid-area: track; position: relative; height: 26px; display: flex; align-items: center; }
+.scrubber-track { position: absolute; left: 0; right: 0; height: 6px; background: var(--card2); border-radius: 3px; }
+.scrubber-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--accent); border-radius: 3px; }
+.scrubber-marker { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px; border-radius: 50%; opacity: 0.3; transition: opacity 0.2s, box-shadow 0.2s; pointer-events: none; }
+.scrubber-marker.on { opacity: 1; box-shadow: 0 0 8px currentColor; }
+.scrubber-track-wrap input[type='range'] { position: absolute; left: 0; right: 0; width: 100%; margin: 0; height: 26px; background: transparent; -webkit-appearance: none; appearance: none; cursor: pointer; }
+.scrubber-track-wrap input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+.scrubber-track-wrap input[type='range']::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+.scrubber-ends { grid-area: ends; display: flex; justify-content: space-between; }

@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import BubbleApp from './bubblemap/BubbleApp.jsx';
+import AppShell from './layout/AppShell.jsx';
 import LoginPage from './LoginPage.jsx';
 
-// The bubble-map dashboard is the primary experience (portfolio tracker folded into
-// the Robinhood-style side panel). The original detailed tracker lives in git history.
+// AppShell renders the left sidebar (Home / Portfolio / Explore / Events / Guidance)
+// and each tab's content from its own folder under features/. See features/*/ for
+// the individual tabs.
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   return isAuthenticated
-    ? <BubbleApp />
+    ? <AppShell />
     : <LoginPage onLogin={() => setIsAuthenticated(true)} />;
 }
