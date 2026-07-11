@@ -19,11 +19,15 @@ export const CATEGORY = {
   earnings: '#06b6d4',
 };
 
-// The stock node itself is the "shock epicenter" — always this color, independent of tier.
-export const EPICENTER_COLOR = '#ff2d78';
+// Every event bubble is this color now, regardless of confidence tier or category —
+// tier/category still drive the connecting links (see TIER/CATEGORY above).
+export const EVENT_COLOR = '#f97316';
 
 export const categoryLabel = (c) =>
   (c || '').replace(/_/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase());
 
 export const tierColor = (t) => (TIER[t] || TIER.unrelated).color;
 export const dirColor = (d) => (d === 'up' ? '#22c55e' : d === 'down' ? '#ef4444' : '#94a3b8');
+
+// Stock bubble color reflects how the stock is doing — green for up, red for down.
+export const stockPerfColor = (pct) => ((pct ?? 0) >= 0 ? '#22c55e' : '#ef4444');

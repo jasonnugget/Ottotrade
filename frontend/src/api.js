@@ -444,6 +444,32 @@ export const api = {
     const data = await loadDataset();
     const cutoff = until ? toUnix(until) : Infinity;
     const events = data.events.filter((event) => event.ts <= cutoff);
+    const live = await getLivePayload();
+    const dayChangeBySymbol = Object.fromEntries(
+      (live.positions || []).map((p) => [p.symbol, p.dayChangePct])
+    );
+
+    const eventStockEdges = events.flatMap((event) =>
+      event.impacts.map((impact) => ({
+        id: `${event.id}->${impact.ticker}`,
+        source: event.id,
+        target: impact.ticker,
+        kind: 'event-stock',
+        tier: impact.tier,
+        direction: impact.direction,
+        pct_change: impact.pct_change,
+        reasoning: impact.reasoning,
+      }))
+    );
+
+    // How much each stock has been affected: sum of the magnitude of every event impact
+    // that touched it, used to size the stock bubble (bigger = more shaken up).
+    const impactMagnitudeBySymbol = {};
+    for (const edge of eventStockEdges) {
+      const magnitude = Math.abs(edge.pct_change || 0);
+      impactMagnitudeBySymbol[edge.target] = (impactMagnitudeBySymbol[edge.target] || 0) + magnitude;
+    }
+
     const nodes = [
       ...Object.entries(data.stockMap).map(([symbol, info]) => ({
         id: symbol,
@@ -451,6 +477,8 @@ export const api = {
         label: symbol,
         name: info.name,
         sector: info.sector,
+        dayChangePct: dayChangeBySymbol[symbol] ?? 0,
+        impactMagnitude: impactMagnitudeBySymbol[symbol] || 0,
       })),
       ...events.map((event) => ({
         id: event.id,
@@ -466,18 +494,7 @@ export const api = {
     ];
 
     const edges = [
-      ...events.flatMap((event) =>
-        event.impacts.map((impact) => ({
-          id: `${event.id}->${impact.ticker}`,
-          source: event.id,
-          target: impact.ticker,
-          kind: 'event-stock',
-          tier: impact.tier,
-          direction: impact.direction,
-          pct_change: impact.pct_change,
-          reasoning: impact.reasoning,
-        }))
-      ),
+      ...eventStockEdges,
       ...data.eventEdges.filter(
         (edge) => data.eventsById[edge.source]?.ts <= cutoff && data.eventsById[edge.target]?.ts <= cutoff
       ),
