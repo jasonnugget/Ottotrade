@@ -1,62 +1,74 @@
 # Vercel + Supabase Deployment
 
-The current portfolio can now ship as a frontend-only Vercel deployment backed by Supabase.
+Ottotrade ships as a frontend-only Vercel deployment backed by Supabase, plus one
+serverless function for the AI analysis.
 
-## What changed
+## What's where
 
-- `frontend` no longer needs the Express backend at runtime.
-- The frontend reads public `demo_*` tables from Supabase directly.
-- The `backend` folder remains the source of the curated event data and cached market data used to generate the Supabase seed.
+- `frontend` — the app. No Express backend at runtime.
+- `frontend/api/analyze.js` — Vercel serverless function; runs the Gemini call server-side
+  so the API key never reaches the browser.
+- `backend` — not deployed. It's the source of the curated event data, the tradable
+  universe (`backend/src/universe.js`), and the cached Yahoo price data used to build the
+  Supabase seed.
 
-## 1. Create the Supabase schema
+## 1. Create the schema
 
-Run [supabase/schema.sql](/Users/jasonnguyen/Desktop/placeholder/supabase/schema.sql:1) in the Supabase SQL Editor.
+In the Supabase SQL Editor, run in this order:
 
-That file includes:
+1. `supabase/schema.sql` — base tables (profiles, demo event/price tables).
+2. `supabase/migration-user-portfolio.sql` — **required.** Adds `demo_stocks` (the
+   tradable universe) and `portfolio_lots` (per-user purchase lots, with RLS), and replaces
+   the signup trigger.
 
-- future auth-oriented tables for login work later
-- public demo tables used by the live portfolio now
+Portfolios are now **per-user and lot-based**: each row in `portfolio_lots` is one purchase
+(N shares at price P on date D). Cost basis, average cost per share, and P/L are all derived
+from those lots — there is no hardcoded starting balance. New accounts are seeded with the
+original demo positions as real dated lots; delete the INSERT block in the migration if you
+want new users to start with an empty portfolio.
 
-## 2. Generate the seed SQL
-
-From [frontend/package.json](/Users/rei/Ottotrade/frontend/package.json:1):
+## 2. Fetch price data + generate the seed
 
 ```bash
-npm run seed:supabase
+node backend/scripts/fetchUniverse.js   # pulls 1d/1h/5m bars for every universe ticker
+cd frontend && npm run seed:supabase    # writes supabase/seed.sql
 ```
 
-This writes:
+Then run `supabase/seed.sql` in the SQL Editor. It seeds the stock catalog, price bars,
+events, impacts, and event edges. It **does not** touch `portfolio_lots` — that's user data.
 
-- [supabase/seed.sql](/Users/jasonnguyen/Desktop/placeholder/supabase/seed.sql:1)
+Every ticker in `backend/src/universe.js` gets price bars, which is what makes it addable to
+a portfolio. To add a new tradable stock: add it to `universe.js`, re-run both commands
+above, and re-run the seed.
 
-Run `supabase/seed.sql` in the Supabase SQL Editor after the schema.
+## 3. Environment variables
 
-The seed is generated from:
-
-- curated event data in `backend/src/events/seed.js`
-- cached price data in `backend/cache`
-
-So Vercel does not need the Node server or live Yahoo calls.
-
-## 3. Set Vercel environment variables
-
-Use [frontend/.env.example](/Users/rei/Ottotrade/frontend/.env.example:1) as the template:
+Client (Vite, from `frontend/.env.example`):
 
 ```env
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
 ```
 
+Server-only (set in the Vercel project settings, **not** prefixed with `VITE_`):
+
+```env
+GEMINI_API_KEY=your-gemini-api-key
+# GEMINI_MODEL=gemini-3.5-flash   (optional override)
+```
+
+A `VITE_`-prefixed value is inlined into the public JS bundle. The Gemini key must never
+carry that prefix.
+
 ## 4. Vercel settings
 
-If your Vercel project root is `frontend`, use:
+Project root `frontend`:
 
 - Build command: `npm run build`
 - Output directory: `dist`
 
-## Current deployment behavior
+## Local development
 
-- Portfolio data, charts, event graph, and timeline come from Supabase.
-- The frontend no longer calls `/api/*`.
-- AI event enrichment is disabled in this frontend-only deployment.
-- Login can be layered on later without restoring the Express runtime.
+`npm run dev` (Vite) serves the app but **does not** run `frontend/api/*` functions — the
+Analysis tab will fail against it. Use `vercel dev` from `frontend/` to exercise the
+serverless function locally.

@@ -74,7 +74,7 @@ export default function ConnectionWeb({ graph, selectedId, onSelect, width, heig
       ctx.shadowBlur = (14 + 8 * pulse) / scale;
       ctx.beginPath();
       ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
-      ctx.fillStyle = '#0a0f1e';
+      ctx.fillStyle = '#050506';
       ctx.fill();
       ctx.lineWidth = 2.25 / scale;
       ctx.strokeStyle = isSel ? '#ffffff' : col;

@@ -18,9 +18,9 @@
   position: absolute;
   inset: 0;
   background:
-    repeating-radial-gradient(circle at 50% 50%, rgba(148,163,184,0.16) 0, rgba(148,163,184,0.16) 1px, transparent 1px, transparent 60px),
-    conic-gradient(from 0deg at 50% 50%, rgba(148,163,184,0.1) 0deg 1deg, transparent 1deg 30deg),
-    #0a0f1e;
+    repeating-radial-gradient(circle at 50% 50%, rgba(148,163,184,0.13) 0, rgba(148,163,184,0.13) 1px, transparent 1px, transparent 60px),
+    conic-gradient(from 0deg at 50% 50%, rgba(148,163,184,0.08) 0deg 1deg, transparent 1deg 30deg),
+    var(--stage);
 }
 
 /* The shell-owned scrubber is present below Explore; hide it only while this feature renders. */

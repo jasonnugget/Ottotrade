@@ -6,16 +6,6 @@ import EventPanel from '../../shared/EventPanel.jsx';
 import StockDetail from './StockDetail.jsx';
 import './explore.css';
 
-const TOP_US_STOCKS = [
-  ['NVDA', 'NVIDIA'], ['MSFT', 'Microsoft'], ['AAPL', 'Apple'], ['AMZN', 'Amazon'],
-  ['GOOGL', 'Alphabet Class A'], ['GOOG', 'Alphabet Class C'], ['META', 'Meta Platforms'],
-  ['AVGO', 'Broadcom'], ['TSLA', 'Tesla'], ['BRK.B', 'Berkshire Hathaway'],
-  ['JPM', 'JPMorgan Chase'], ['WMT', 'Walmart'], ['LLY', 'Eli Lilly'], ['V', 'Visa'],
-  ['MA', 'Mastercard'], ['NFLX', 'Netflix'], ['XOM', 'Exxon Mobil'], ['COST', 'Costco'],
-  ['ORCL', 'Oracle'], ['HD', 'Home Depot'], ['PG', 'Procter & Gamble'], ['ABBV', 'AbbVie'],
-  ['BAC', 'Bank of America'], ['KO', 'Coca-Cola'], ['CRM', 'Salesforce'],
-].map(([symbol, stockName]) => ({ symbol, name: stockName }));
-
 // Drill-in for one stock: price chart + a bubble map of the events that moved it.
 // symbol is null until a stock is picked (from the picker below, or via onOpenStock
 // from another tab) — this is a standalone sidebar tab, not just a drill-in anymore.
@@ -37,11 +27,16 @@ export default function ExploreTab({
 }) {
   const [query, setQuery] = useState('');
   const [activeView, setActiveView] = useState('chart');
-  const topStocks = useMemo(() => TOP_US_STOCKS.map((stock) => ({
-    ...stock,
-    name: stocks?.[stock.symbol]?.name || stock.name,
-    position: positions?.find((item) => item.symbol === stock.symbol),
-  })), [positions, stocks]);
+  // Built from the real tradable universe (the stocks that actually have price data
+  // seeded), not a hardcoded list — a ticker in this picker with no bars behind it would
+  // open to an empty chart.
+  const topStocks = useMemo(() => Object.entries(stocks || {})
+    .map(([stockSymbol, info]) => ({
+      symbol: stockSymbol,
+      name: info.name,
+      position: positions?.find((item) => item.symbol === stockSymbol),
+    }))
+    .sort((a, b) => a.symbol.localeCompare(b.symbol)), [positions, stocks]);
   const filteredStocks = topStocks.filter((stock) => {
     const search = query.trim().toLowerCase();
     return !search || stock.symbol.toLowerCase().includes(search) || stock.name.toLowerCase().includes(search);
@@ -58,7 +53,7 @@ export default function ExploreTab({
           <div className="sv-id"><span className="sv-ticker">Explore</span></div>
         </header>
         <div className="card">
-          <div className="card-head"><h2>Top 25 U.S. stocks</h2></div>
+          <div className="card-head"><h2>{topStocks.length} tradable stocks</h2><span className="muted tiny">everything you can add to your portfolio</span></div>
           <label className="stock-search">
             <span className="sr-only">Search stocks</span>
             <input

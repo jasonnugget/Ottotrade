@@ -20,7 +20,7 @@ export default function GeoMap({ events, selectedId, onSelect, width, height }) 
 
   return (
     <svg className="geomap" width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
-      <rect x="0" y="0" width={W} height={H} fill="#0b1020" />
+      <rect x="0" y="0" width={W} height={H} fill="#050506" />
       {/* graticule */}
       {[-120, -60, 0, 60, 120].map((lon) => (
         <line key={`v${lon}`} x1={px(lon)} y1="0" x2={px(lon)} y2={H} stroke="rgba(255,255,255,0.05)" />

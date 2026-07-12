@@ -29,6 +29,9 @@ export default function HomeTab({
     onSelectEvent({ id: node.id, type: 'event' });
   };
 
+  // The web is built from the stocks you hold, so an empty portfolio has nothing to draw.
+  const isEmpty = !graph?.nodes?.length;
+
   return (
     <div className="webview">
       <header className="bm-header">
@@ -40,8 +43,21 @@ export default function HomeTab({
 
       <div className={`bm-body${selectedEvent ? ' with-side' : ''}`}>
         <div className="bm-stage" ref={stageRef}>
-          <ConnectionWeb graph={graph} selectedId={selectedEvent?.id} onSelect={handleSelect} width={size.w} height={size.h} />
-          <Legend />
+          {isEmpty ? (
+            <div className="bm-empty">
+              <h2>Your event web is empty</h2>
+              <p className="muted">
+                This map shows the news events that moved the stocks you own. Add a position
+                to see what's been driving it.
+              </p>
+              <button className="bm-empty-cta" onClick={onOpenPortfolio}>Go to Portfolio →</button>
+            </div>
+          ) : (
+            <>
+              <ConnectionWeb graph={graph} selectedId={selectedEvent?.id} onSelect={handleSelect} width={size.w} height={size.h} />
+              <Legend />
+            </>
+          )}
         </div>
         {selectedEvent && (
           <aside className="bm-side">

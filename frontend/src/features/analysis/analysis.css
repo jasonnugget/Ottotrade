@@ -11,7 +11,7 @@
 .analysis-workspace { display: grid; grid-template-columns: minmax(180px, 25%) 1fr; flex: 1; min-height: 0; padding: 0; overflow: hidden; }
 /* Report is in — Otto is unmounted and the panel gets the full page width. */
 .analysis-workspace--expanded { grid-template-columns: 1fr; }
-.analysis-otto { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 28px 18px; text-align: center; background: radial-gradient(circle at 50% 25%, rgba(59, 130, 246, .2), transparent 52%), var(--card2); border-right: 1px solid var(--border); }
+.analysis-otto { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 28px 18px; text-align: center; background: radial-gradient(circle at 50% 25%, rgba(249, 115, 22, .18), transparent 52%), var(--card2); border-right: 1px solid var(--border); }
 .analysis-otto img { width: min(100%, 176px); aspect-ratio: 1; object-fit: contain; filter: drop-shadow(0 12px 18px rgba(0, 0, 0, .28)); }
 .analysis-otto p { max-width: 170px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
 .analysis-panel { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; padding: 24px 30px; overflow: hidden; }
@@ -19,15 +19,16 @@
 .analysis-panel-heading p { max-width: 650px; margin: 0; color: var(--muted); line-height: 1.45; }
 .analysis-stock-list { display: grid; flex: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; min-height: 0; margin: 18px 0; overflow-y: auto; align-content: start; }
 .analysis-stock { display: grid; grid-template-columns: 21px 1fr auto auto; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 10px; padding: 12px; color: var(--text); background: var(--card2); font: inherit; text-align: left; cursor: pointer; }
-.analysis-stock:hover, .analysis-stock.selected { border-color: var(--accent); background: rgba(59, 130, 246, .1); }
+.analysis-stock:hover, .analysis-stock.selected { border-color: var(--accent); background: rgba(249, 115, 22, .12); }
 .analysis-stock em { font-size: 12px; font-style: normal; }
 .analysis-check { display: grid; width: 18px; height: 18px; place-items: center; border: 1px solid var(--border); border-radius: 5px; color: #fff; font-size: 12px; }
 .selected .analysis-check { border-color: var(--accent); background: var(--accent); }
+.analysis-empty { grid-column: 1 / -1; margin: 0; padding: 20px 2px; font-size: 13px; line-height: 1.5; }
 .analysis-evidence-list { display: grid; flex: 1; gap: 12px; min-height: 0; margin: 18px 0; overflow-y: auto; align-content: start; }
 .analysis-evidence { border: 1px solid var(--border); border-radius: 11px; overflow: hidden; }
 .analysis-evidence h3 { margin: 0; padding: 10px 13px; font-size: 14px; background: var(--card2); }
 .analysis-evidence label { display: flex; gap: 10px; padding: 11px 13px; border-top: 1px solid rgba(255, 255, 255, .05); cursor: pointer; }
-.analysis-evidence label:hover, .analysis-evidence label.selected { background: rgba(59, 130, 246, .08); }
+.analysis-evidence label:hover, .analysis-evidence label.selected { background: rgba(249, 115, 22, .1); }
 .analysis-evidence input { margin-top: 3px; accent-color: var(--accent); }
 .analysis-evidence b, .analysis-evidence small { display: block; }
 .analysis-evidence b { font-size: 13px; line-height: 1.35; }
@@ -71,6 +72,11 @@
 .analysis-markdown-table table { min-width: 620px; font-size: 10px; }
 .analysis-markdown-table th, .analysis-markdown-table td { padding: 5px 6px; vertical-align: top; white-space: normal; }
 .analysis-markdown-table th { color: var(--text); }
+/* Company-type + measured-volatility context, so the reader can see at a glance whether a
+   given % move is a big deal for THIS stock. */
+.analysis-profile-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+.analysis-profile-chips span { padding: 3px 9px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); color: var(--muted); font-size: 11px; font-weight: 700; text-transform: capitalize; }
+
 .analysis-scorecard { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 4px 0 8px; }
 .analysis-scorecard > div { padding: 8px 9px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); }
 .analysis-scorecard b { display: block; font-size: 11px; color: var(--text); margin-bottom: 2px; }

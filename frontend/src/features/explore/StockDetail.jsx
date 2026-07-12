@@ -17,7 +17,7 @@ export default function StockDetail({ symbol, name }) {
     if (!el.current) return;
     const chart = createChart(el.current, {
       height: 380,
-      layout: { background: { color: 'transparent' }, textColor: '#8b97b0', fontSize: 10, attributionLogo: false },
+      layout: { background: { color: 'transparent' }, textColor: '#8a8f96', fontSize: 10, attributionLogo: false },
       grid: { horzLines: { color: 'rgba(255,255,255,0.05)' }, vertLines: { color: 'rgba(255,255,255,0.05)' } },
       rightPriceScale: { borderColor: 'rgba(255,255,255,0.1)' },
       timeScale: { borderColor: 'rgba(255,255,255,0.1)' },

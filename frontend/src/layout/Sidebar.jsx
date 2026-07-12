@@ -1,3 +1,4 @@
+import ottoLogo from '../assets/otto-logo.png';
 import './Sidebar.css';
 
 // Left navigation. Purely presentational — add a tab here and drop a folder under
@@ -13,7 +14,10 @@ const TABS = [
 export default function Sidebar({ active, onSelect }) {
   return (
     <nav className="sidebar">
-      <div className="sidebar-brand">Ottotrade</div>
+      <div className="sidebar-brand">
+        <img className="sidebar-logo" src={ottoLogo} alt="" />
+        <span>Ottotrade</span>
+      </div>
       <div className="sidebar-tabs">
         {TABS.map((t) => (
           <button

@@ -1,5 +1,5 @@
 .login-page {
-  --ink: #101b35;
+  --ink: #000000;
   min-height: 100vh;
   position: relative;
   isolation: isolate;
@@ -58,11 +58,11 @@
    Each propulsion drops its ink further along his escape path. */
 .ink-transition { position: fixed; z-index: 40; inset: 0; overflow: hidden; pointer-events: none; }
 
-.ink-drop { position: absolute; z-index: 42; display: block; width: 14px; height: 14px; opacity: 0; border-radius: 52% 48% 55% 45%; background: radial-gradient(circle at 34% 30%, #4a5e90 0 10%, #1d305c 52%, #0d1a3a 100%); box-shadow: inset -2px -3px 5px rgba(7, 14, 33, .3), 0 3px 8px rgba(9, 16, 40, .3); transform: translate(-50%, -50%) scale(.2); filter: blur(.3px); }
+.ink-drop { position: absolute; z-index: 42; display: block; width: 14px; height: 14px; opacity: 0; border-radius: 52% 48% 55% 45%; background: radial-gradient(circle at 34% 30%, #4a4a4a 0 10%, #1a1a1a 52%, #000 100%); box-shadow: inset -2px -3px 5px rgba(0, 0, 0, .35), 0 3px 8px rgba(0, 0, 0, .35); transform: translate(-50%, -50%) scale(.2); filter: blur(.3px); }
 .ink-drop--two { width: 11px; height: 11px; }
 .ink-drop--three { width: 9px; height: 9px; }
 
-.ink-bloom { position: absolute; width: 160px; height: 160px; margin: -80px 0 0 -80px; opacity: 0; border-radius: 46% 54% 43% 57% / 54% 45% 55% 46%; background: radial-gradient(circle at 45% 40%, #15244a 0%, #0e1a38 55%, #0a1026 100%); transform: scale(0); transform-origin: center; filter: blur(2px); }
+.ink-bloom { position: absolute; width: 160px; height: 160px; margin: -80px 0 0 -80px; opacity: 0; border-radius: 46% 54% 43% 57% / 54% 45% 55% 46%; background: radial-gradient(circle at 45% 40%, #1c1c1c 0%, #0b0b0b 55%, #000 100%); transform: scale(0); transform-origin: center; filter: blur(2px); }
 .ink-bloom--one { border-radius: 52% 48% 57% 43% / 47% 55% 45% 53%; }
 .ink-bloom--two { border-radius: 43% 57% 48% 52% / 56% 44% 58% 42%; }
 .ink-bloom--three { border-radius: 55% 45% 50% 50% / 48% 52% 46% 54%; }
@@ -72,7 +72,9 @@
 .ink-bloom--two, .ink-drop--two { left: calc(var(--ink-x, 50%) + var(--swim-x, 0px) * .3); top: calc(var(--ink-y, 62%) + var(--swim-y, 0px) * .3); }
 .ink-bloom--three, .ink-drop--three { left: calc(var(--ink-x, 50%) + var(--swim-x, 0px) * .58); top: calc(var(--ink-y, 62%) + var(--swim-y, 0px) * .58); }
 
-.ink-flood { position: absolute; z-index: 41; left: var(--ink-x, 50%); top: var(--ink-y, 62%); width: 200px; height: 200px; margin: -100px 0 0 -100px; opacity: 0; border-radius: 50%; background: radial-gradient(circle at 46% 42%, #17233f 0%, #0e1526 52%, #0b0f19 100%); transform: scale(0); filter: blur(1px); }
+/* Floods to pure black, which is exactly the app's background — so the ink hands off to
+   the dashboard with no visible seam. */
+.ink-flood { position: absolute; z-index: 41; left: var(--ink-x, 50%); top: var(--ink-y, 62%); width: 200px; height: 200px; margin: -100px 0 0 -100px; opacity: 0; border-radius: 50%; background: radial-gradient(circle at 46% 42%, #141414 0%, #050505 52%, #000 100%); transform: scale(0); filter: blur(1px); }
 
 .login-card__heading { text-align: center; }
 .login-card__eyebrow { margin: 0 0 7px; color: #f48117; font-size: 11px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }

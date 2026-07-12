@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../api.js';
 
 const LIVE_POLL_MS = 20000;
@@ -16,20 +16,32 @@ export default function useAppData() {
   const [currentTs, setCurrentTs] = useState(null);
   const [ai, setAi] = useState({});
   const [error, setError] = useState(null);
+  // Bumped after a portfolio mutation. Everything downstream of the user's holdings —
+  // value, P/L, the event web, the timeline — is derived, so all of it has to be re-pulled
+  // when a stock is added or sold.
+  const [portfolioVersion, setPortfolioVersion] = useState(0);
+
+  const refreshPortfolio = useCallback(() => setPortfolioVersion((version) => version + 1), []);
 
   useEffect(() => {
-    Promise.all([api.timeline(), api.graph(), api.events(), api.stocks(), api.enrichStatus()])
-      .then(([tl, g, ev, st, es]) => {
+    let cancelled = false;
+    Promise.all([api.timeline(), api.graph(), api.events(), api.stocks(), api.enrichStatus(), api.live()])
+      .then(([tl, g, ev, st, es, lv]) => {
+        if (cancelled) return;
         setTimeline(tl);
         setFullGraph(g);
         setEvents(ev);
         setStocks(st);
         setEnrichAvail(es.available);
-        setCurrentTs(tl.end);
+        setLive(lv);
+        // Snap the scrubber to the end of the (possibly new) timeline.
+        setCurrentTs(tl.end ?? null);
       })
-      .catch((e) => setError(e.message));
-    api.live().then(setLive).catch(() => {});
-  }, []);
+      .catch((e) => !cancelled && setError(e.message));
+    return () => {
+      cancelled = true;
+    };
+  }, [portfolioVersion]);
 
   useEffect(() => {
     const id = setInterval(() => api.live().then(setLive).catch(() => {}), LIVE_POLL_MS);
@@ -87,5 +99,6 @@ export default function useAppData() {
     visibleGraph,
     visibleEvents,
     enrichFor,
+    refreshPortfolio,
   };
 }

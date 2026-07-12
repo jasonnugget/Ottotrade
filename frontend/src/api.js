@@ -1,9 +1,13 @@
-import { getPublicSupabase } from './supabase.js';
+import { getPublicSupabase, getSupabase } from './supabase.js';
 
 const DAY = 86400;
 const TIMEFRAMES = ['1D', '1W', '1M', '3M', '6M', 'YTD', '1Y', 'SINCE'];
 
-let datasetPromise;
+// Reference data (prices, events, the tradable universe) is public and immutable, so it's
+// fetched once. The user's LOTS are separate: they change whenever a stock is added or
+// sold, so they're cached only until the next mutation (see invalidatePortfolio).
+let referencePromise;
+let lotsPromise;
 
 function toUnix(value) {
   if (typeof value === 'number') return value;
@@ -48,29 +52,22 @@ async function fetchAllRows(supabase, table, orderColumn) {
 
 async function loadRows() {
   const supabase = getPublicSupabase();
-  const [
-    metaRes,
-    holdingsRes,
-    eventsRes,
-    impactsRes,
-    edgesRes,
-    barsRes,
-  ] = await Promise.all([
+  const [metaRes, stocksRes, eventsRes, impactsRes, edgesRes, barsRes] = await Promise.all([
     supabase.from('demo_portfolio_meta').select('*').eq('id', 'default').single(),
-    supabase.from('demo_portfolio_holdings').select('*').order('ticker'),
+    supabase.from('demo_stocks').select('*').order('ticker'),
     supabase.from('demo_events').select('*').order('event_date'),
     supabase.from('demo_event_impacts').select('*').order('event_id'),
     supabase.from('demo_event_edges').select('*').order('source_event_id'),
     fetchAllRows(supabase, 'demo_stock_bars', 'bar_ts'),
   ]);
 
-  for (const result of [metaRes, holdingsRes, eventsRes, impactsRes, edgesRes, barsRes]) {
+  for (const result of [metaRes, stocksRes, eventsRes, impactsRes, edgesRes, barsRes]) {
     if (result.error) throw result.error;
   }
 
   return {
     meta: metaRes.data,
-    holdings: holdingsRes.data,
+    stocks: stocksRes.data,
     events: eventsRes.data,
     impacts: impactsRes.data,
     edges: edgesRes.data,
@@ -104,27 +101,12 @@ function indexBars(barRows) {
   return byTicker;
 }
 
-function buildDataset(rows) {
+function buildReference(rows) {
   const barIndex = indexBars(rows.bars);
-  const holdings = rows.holdings.map((row) => ({
-    symbol: row.ticker,
-    company: row.company,
-    sector: row.sector,
-    dollarsAllocated: asNum(row.allocation_usd),
-    weight: asNum(row.allocation_pct) / 100,
-    buyPrice: asNum(row.buy_price),
-    buyPriceMethod: row.buy_price_method,
-    snapshotPrice: asNum(row.snapshot_price),
-    snapshotPriceMethod: row.snapshot_price_method,
-    shares: asNum(row.shares),
-  }));
 
-  const holdingsBySymbol = Object.fromEntries(holdings.map((holding) => [holding.symbol, holding]));
+  // Every ticker a user can buy, with the display metadata the UI needs.
   const stockMap = Object.fromEntries(
-    holdings.map((holding) => [
-      holding.symbol,
-      { name: holding.company, sector: holding.sector, allocation: holding.dollarsAllocated },
-    ])
+    rows.stocks.map((row) => [row.ticker, { name: row.company, sector: row.sector }])
   );
 
   const impactsByEvent = {};
@@ -180,18 +162,13 @@ function buildDataset(rows) {
   return {
     meta: {
       capital: asNum(rows.meta.capital),
-      purchase: {
-        date: rows.meta.purchase_date,
-        ts: toUnix(rows.meta.purchase_ts),
-      },
+      purchase: { date: rows.meta.purchase_date, ts: toUnix(rows.meta.purchase_ts) },
       snapshot: {
         date: rows.meta.snapshot_date,
         ts: toUnix(rows.meta.snapshot_ts),
         hourEst: rows.meta.snapshot_hour_est,
       },
     },
-    holdings,
-    holdingsBySymbol,
     stockMap,
     events,
     eventsById,
@@ -200,40 +177,110 @@ function buildDataset(rows) {
   };
 }
 
-async function loadDataset() {
-  if (!datasetPromise) {
-    datasetPromise = loadRows().then(buildDataset);
-  }
-  return datasetPromise;
+async function loadReference() {
+  if (!referencePromise) referencePromise = loadRows().then(buildReference);
+  return referencePromise;
 }
 
-function unionDailySeries(data) {
-  const lastClose = {};
-  const dateMap = new Map();
+// ---- The user's portfolio: real lots, real cost basis --------------------------------
 
-  for (const holding of data.holdings) {
-    const bars = data.barIndex[holding.symbol]?.['1d'] || [];
-    for (const bar of bars) {
+async function loadLots() {
+  if (!lotsPromise) {
+    lotsPromise = getSupabase()
+      .from('portfolio_lots')
+      .select('*')
+      .order('purchase_date')
+      .then(({ data, error }) => {
+        if (error) throw error;
+        return (data || []).map((row) => ({
+          id: row.id,
+          symbol: row.ticker,
+          shares: asNum(row.shares),
+          buyPrice: asNum(row.buy_price),
+          purchaseDate: row.purchase_date,
+          purchaseTs: toUnix(`${row.purchase_date}T00:00:00Z`),
+          cost: asNum(row.shares) * asNum(row.buy_price),
+        }));
+      });
+  }
+  return lotsPromise;
+}
+
+function invalidatePortfolio() {
+  lotsPromise = undefined;
+}
+
+// Collapse a ticker's lots into one holding. This is where average cost per share comes
+// from: total dollars spent / total shares owned — NOT the price of the most recent buy.
+function holdingsFromLots(lots) {
+  const bySymbol = new Map();
+  for (const lot of lots) {
+    const holding = bySymbol.get(lot.symbol) || {
+      symbol: lot.symbol,
+      shares: 0,
+      cost: 0,
+      lots: [],
+      firstPurchaseTs: Infinity,
+    };
+    holding.shares += lot.shares;
+    holding.cost += lot.cost;
+    holding.lots.push(lot);
+    holding.firstPurchaseTs = Math.min(holding.firstPurchaseTs, lot.purchaseTs);
+    bySymbol.set(lot.symbol, holding);
+  }
+
+  for (const holding of bySymbol.values()) {
+    holding.avgCost = holding.shares > 0 ? holding.cost / holding.shares : 0;
+    holding.lots.sort((a, b) => a.purchaseTs - b.purchaseTs);
+  }
+
+  return [...bySymbol.values()].sort((a, b) => a.symbol.localeCompare(b.symbol));
+}
+
+async function loadPortfolio() {
+  const [reference, lots] = await Promise.all([loadReference(), loadLots()]);
+  const holdings = holdingsFromLots(lots);
+  return { reference, lots, holdings };
+}
+
+// Portfolio value over time. A lot only counts from the day it was actually bought — that
+// is the whole point of tracking purchase dates, and it's why buying a stock today doesn't
+// retroactively inflate last month's portfolio value.
+function unionDailySeries(reference, lots) {
+  if (!lots.length) return [];
+
+  const symbols = [...new Set(lots.map((lot) => lot.symbol))];
+  const dateMap = new Map();
+  for (const symbol of symbols) {
+    for (const bar of reference.barIndex[symbol]?.['1d'] || []) {
       const date = isoDay(bar.t);
       if (!dateMap.has(date)) dateMap.set(date, { ts: bar.t, closes: {} });
-      dateMap.get(date).closes[holding.symbol] = bar.c;
+      dateMap.get(date).closes[symbol] = bar.c;
     }
   }
 
+  const earliestPurchase = Math.min(...lots.map((lot) => lot.purchaseTs));
+  const lastClose = {};
   const series = [];
+
   for (const [date, point] of [...dateMap.entries()].sort((a, b) => a[1].ts - b[1].ts)) {
-    let value = 0;
-    let complete = true;
-    for (const holding of data.holdings) {
-      const close = point.closes[holding.symbol];
-      if (close != null) lastClose[holding.symbol] = close;
-      if (lastClose[holding.symbol] == null) {
-        complete = false;
-      } else {
-        value += holding.shares * lastClose[holding.symbol];
-      }
+    for (const symbol of symbols) {
+      if (point.closes[symbol] != null) lastClose[symbol] = point.closes[symbol];
     }
-    if (complete) series.push({ date, ts: point.ts, value });
+    if (point.ts < earliestPurchase) continue;
+
+    let value = 0;
+    let priced = true;
+    for (const lot of lots) {
+      if (lot.purchaseTs > point.ts) continue; // not owned yet on this date
+      const close = lastClose[lot.symbol];
+      if (close == null) {
+        priced = false;
+        break;
+      }
+      value += lot.shares * close;
+    }
+    if (priced) series.push({ date, ts: point.ts, value });
   }
 
   return series;
@@ -248,9 +295,9 @@ function valueAtOrBefore(series, ts) {
   return chosen;
 }
 
-function latestQuoteForSymbol(data, symbol) {
-  const intraday = data.barIndex[symbol]?.['5m'] || [];
-  const daily = data.barIndex[symbol]?.['1d'] || [];
+function latestQuoteForSymbol(reference, symbol) {
+  const intraday = reference.barIndex[symbol]?.['5m'] || [];
+  const daily = reference.barIndex[symbol]?.['1d'] || [];
   const current = intraday[intraday.length - 1] || daily[daily.length - 1];
   const latestDay = current ? isoDay(current.t) : null;
   let previousClose = null;
@@ -266,8 +313,7 @@ function latestQuoteForSymbol(data, symbol) {
     symbol,
     price: current?.c ?? null,
     previousClose,
-    change:
-      current?.c != null && previousClose != null ? current.c - previousClose : null,
+    change: current?.c != null && previousClose != null ? current.c - previousClose : null,
     changePct:
       current?.c != null && previousClose ? (current.c - previousClose) / previousClose : null,
     marketState: 'SNAPSHOT',
@@ -276,37 +322,47 @@ function latestQuoteForSymbol(data, symbol) {
 }
 
 async function getLivePayload() {
-  const data = await loadDataset();
-  const dailySeries = unionDailySeries(data);
+  const { reference, lots, holdings } = await loadPortfolio();
+  const dailySeries = unionDailySeries(reference, lots);
+
   const quotes = {};
   const positions = [];
   let liveValue = 0;
   let prevCloseValue = 0;
+  let costBasis = 0;
   let nowTs = 0;
 
-  for (const holding of data.holdings) {
-    const quote = latestQuoteForSymbol(data, holding.symbol);
+  for (const holding of holdings) {
+    const quote = latestQuoteForSymbol(reference, holding.symbol);
     quotes[holding.symbol] = { ...quote, shares: holding.shares };
-    const value = holding.shares * quote.price;
-    const prevValue =
-      quote.previousClose != null ? holding.shares * quote.previousClose : value;
+
+    const value = quote.price != null ? holding.shares * quote.price : 0;
+    const prevValue = quote.previousClose != null ? holding.shares * quote.previousClose : value;
     liveValue += value;
     prevCloseValue += prevValue;
+    costBasis += holding.cost;
     nowTs = Math.max(nowTs, quote.time || 0);
+
     positions.push({
       symbol: holding.symbol,
+      name: reference.stockMap[holding.symbol]?.name,
       shares: holding.shares,
-      buyPrice: holding.buyPrice,
+      avgCost: holding.avgCost,
+      buyPrice: holding.avgCost, // kept for callers that still read buyPrice
       price: quote.price,
       previousClose: quote.previousClose,
       value,
       dayChange: value - prevValue,
       dayChangePct: prevValue ? (value - prevValue) / prevValue : 0,
-      cost: holding.dollarsAllocated,
-      pl: value - holding.dollarsAllocated,
-      plPct: (value - holding.dollarsAllocated) / holding.dollarsAllocated,
+      cost: holding.cost,
+      pl: value - holding.cost,
+      plPct: holding.cost ? (value - holding.cost) / holding.cost : 0,
+      firstPurchaseDate: isoDay(holding.firstPurchaseTs),
+      lots: holding.lots,
     });
   }
+
+  if (!nowTs) nowTs = Math.floor(Date.now() / 1000);
 
   const windows = {
     day: {
@@ -319,17 +375,18 @@ async function getLivePayload() {
     },
   };
 
+  const inceptionTs = lots.length ? Math.min(...lots.map((lot) => lot.purchaseTs)) : nowTs;
   for (const [name, secs] of Object.entries({ week: 7 * DAY, month: 30 * DAY, year: 365 * DAY })) {
-    const startTs = Math.max(nowTs - secs, data.meta.purchase.ts);
-    const start = valueAtOrBefore(dailySeries, startTs);
+    const startTs = Math.max(nowTs - secs, inceptionTs);
+    const start = dailySeries.length ? valueAtOrBefore(dailySeries, startTs) : null;
     windows[name] = {
       window: name,
-      fromDate: start.date,
-      fromValue: start.value,
+      fromDate: start?.date ?? null,
+      fromValue: start?.value ?? 0,
       toValue: liveValue,
-      change: liveValue - start.value,
-      changePct: start.value ? (liveValue - start.value) / start.value : 0,
-      clampedToInception: startTs === data.meta.purchase.ts,
+      change: start ? liveValue - start.value : 0,
+      changePct: start?.value ? (liveValue - start.value) / start.value : 0,
+      clampedToInception: startTs === inceptionTs,
     };
   }
 
@@ -337,7 +394,7 @@ async function getLivePayload() {
   const series = [...dailySeries];
   if (series.length && series[series.length - 1].date === nowDate) {
     series[series.length - 1] = { date: nowDate, ts: nowTs, value: liveValue, live: true };
-  } else {
+  } else if (holdings.length) {
     series.push({ date: nowDate, ts: nowTs, value: liveValue, live: true });
   }
 
@@ -345,11 +402,12 @@ async function getLivePayload() {
     live: true,
     asOf: new Date(nowTs * 1000).toISOString(),
     marketState: 'SNAPSHOT',
+    isEmpty: holdings.length === 0,
     currentValue: liveValue,
     previousCloseValue: prevCloseValue,
-    costBasis: data.meta.capital,
-    totalPl: liveValue - data.meta.capital,
-    totalPlPct: (liveValue - data.meta.capital) / data.meta.capital,
+    costBasis,
+    totalPl: liveValue - costBasis,
+    totalPlPct: costBasis ? (liveValue - costBasis) / costBasis : 0,
     windows,
     positions,
     series,
@@ -357,9 +415,9 @@ async function getLivePayload() {
   };
 }
 
-function barsForTimeframe(data, symbol, timeframe) {
-  const daily = data.barIndex[symbol]?.['1d'] || [];
-  const intraday = data.barIndex[symbol]?.['5m'] || [];
+function barsForTimeframe(reference, symbol, timeframe) {
+  const daily = reference.barIndex[symbol]?.['1d'] || [];
+  const intraday = reference.barIndex[symbol]?.['5m'] || [];
   const nowTs = (intraday[intraday.length - 1] || daily[daily.length - 1])?.t || 0;
   const startOfYear = new Date(new Date(nowTs * 1000).getFullYear(), 0, 1).getTime() / 1000;
 
@@ -380,49 +438,42 @@ function barsForTimeframe(data, symbol, timeframe) {
       return { interval: '1d', bars: daily.filter((bar) => bar.t >= nowTs - 365 * DAY) };
     case 'SINCE':
     default:
-      return { interval: '1d', bars: daily.filter((bar) => bar.t >= data.meta.purchase.ts - 3 * DAY) };
+      return { interval: '1d', bars: daily };
   }
 }
 
 async function getStockHistoryPayload(symbol, timeframe = 'SINCE') {
-  const data = await loadDataset();
-  const holding = data.holdingsBySymbol[symbol];
-  if (!holding) throw new Error(`unknown symbol ${symbol}`);
+  const { reference, holdings } = await loadPortfolio();
+  if (!reference.stockMap[symbol]) throw new Error(`unknown symbol ${symbol}`);
 
-  const { interval, bars } = barsForTimeframe(data, symbol, timeframe);
+  const holding = holdings.find((item) => item.symbol === symbol) || null;
+  const { interval, bars } = barsForTimeframe(reference, symbol, timeframe);
   const first = bars[0]?.t ?? 0;
   const last = bars[bars.length - 1]?.t ?? 0;
-  const markers = [];
 
-  if (data.meta.purchase.ts >= first && data.meta.purchase.ts <= last) {
-    markers.push({
+  // One marker per actual purchase lot, rather than a single hardcoded buy date.
+  const markers = (holding?.lots || [])
+    .filter((lot) => lot.purchaseTs >= first && lot.purchaseTs <= last)
+    .map((lot) => ({
       type: 'purchase',
-      ts: data.meta.purchase.ts,
-      price: holding.buyPrice,
-      label: 'Bought',
-    });
-  }
-  if (data.meta.snapshot.ts >= first && data.meta.snapshot.ts <= last) {
-    markers.push({
-      type: 'snapshot',
-      ts: data.meta.snapshot.ts,
-      price: holding.snapshotPrice,
-      label: 'Mar 2 11:00',
-    });
-  }
+      ts: lot.purchaseTs,
+      price: lot.buyPrice,
+      label: `Bought ${lot.shares.toLocaleString('en-US', { maximumFractionDigits: 2 })} @ ${usd(lot.buyPrice)}`,
+    }));
 
   return {
     symbol,
     timeframe,
     interval,
-    buyPrice: holding.buyPrice,
+    buyPrice: holding?.avgCost ?? null,
+    shares: holding?.shares ?? 0,
     bars,
     markers,
   };
 }
 
 export const api = {
-  meta: async () => (await loadDataset()).meta,
+  meta: async () => (await loadReference()).meta,
   summary: async () => getLivePayload(),
   pl: async () => {
     const live = await getLivePayload();
@@ -439,27 +490,36 @@ export const api = {
   },
   live: async () => getLivePayload(),
   quotes: async () => (await getLivePayload()).quotes,
-  events: async () => (await loadDataset()).events,
+  events: async () => (await loadReference()).events,
+
   graph: async (until) => {
-    const data = await loadDataset();
+    const { reference, holdings } = await loadPortfolio();
     const cutoff = until ? toUnix(until) : Infinity;
-    const events = data.events.filter((event) => event.ts <= cutoff);
+    const held = new Set(holdings.map((holding) => holding.symbol));
+
+    // The event web is the user's OWN portfolio's web: only events touching a stock they
+    // actually hold, and only stocks they actually hold.
+    const events = reference.events.filter(
+      (event) => event.ts <= cutoff && event.impacts.some((impact) => held.has(impact.ticker))
+    );
     const live = await getLivePayload();
     const dayChangeBySymbol = Object.fromEntries(
-      (live.positions || []).map((p) => [p.symbol, p.dayChangePct])
+      (live.positions || []).map((position) => [position.symbol, position.dayChangePct])
     );
 
     const eventStockEdges = events.flatMap((event) =>
-      event.impacts.map((impact) => ({
-        id: `${event.id}->${impact.ticker}`,
-        source: event.id,
-        target: impact.ticker,
-        kind: 'event-stock',
-        tier: impact.tier,
-        direction: impact.direction,
-        pct_change: impact.pct_change,
-        reasoning: impact.reasoning,
-      }))
+      event.impacts
+        .filter((impact) => held.has(impact.ticker))
+        .map((impact) => ({
+          id: `${event.id}->${impact.ticker}`,
+          source: event.id,
+          target: impact.ticker,
+          kind: 'event-stock',
+          tier: impact.tier,
+          direction: impact.direction,
+          pct_change: impact.pct_change,
+          reasoning: impact.reasoning,
+        }))
     );
 
     // How much each stock has been affected: sum of the magnitude of every event impact
@@ -470,15 +530,16 @@ export const api = {
       impactMagnitudeBySymbol[edge.target] = (impactMagnitudeBySymbol[edge.target] || 0) + magnitude;
     }
 
+    const eventIds = new Set(events.map((event) => event.id));
     const nodes = [
-      ...Object.entries(data.stockMap).map(([symbol, info]) => ({
-        id: symbol,
+      ...holdings.map((holding) => ({
+        id: holding.symbol,
         type: 'stock',
-        label: symbol,
-        name: info.name,
-        sector: info.sector,
-        dayChangePct: dayChangeBySymbol[symbol] ?? 0,
-        impactMagnitude: impactMagnitudeBySymbol[symbol] || 0,
+        label: holding.symbol,
+        name: reference.stockMap[holding.symbol]?.name,
+        sector: reference.stockMap[holding.symbol]?.sector,
+        dayChangePct: dayChangeBySymbol[holding.symbol] ?? 0,
+        impactMagnitude: impactMagnitudeBySymbol[holding.symbol] || 0,
       })),
       ...events.map((event) => ({
         id: event.id,
@@ -495,25 +556,29 @@ export const api = {
 
     const edges = [
       ...eventStockEdges,
-      ...data.eventEdges.filter(
-        (edge) => data.eventsById[edge.source]?.ts <= cutoff && data.eventsById[edge.target]?.ts <= cutoff
+      ...reference.eventEdges.filter(
+        (edge) => eventIds.has(edge.source) && eventIds.has(edge.target)
       ),
     ];
 
     return { nodes, edges, eventCount: events.length };
   },
+
   timeline: async () => {
-    const data = await loadDataset();
-    const points = unionDailySeries(data);
-    const markers = data.events.map((event) => ({
-      id: event.id,
-      ts: event.ts,
-      date: event.date.slice(0, 10),
-      headline: event.headline,
-      tier: event.confidence_tier,
-      category: event.category,
-      magnitude: event.magnitude,
-    }));
+    const { reference, lots, holdings } = await loadPortfolio();
+    const points = unionDailySeries(reference, lots);
+    const held = new Set(holdings.map((holding) => holding.symbol));
+    const markers = reference.events
+      .filter((event) => event.impacts.some((impact) => held.has(impact.ticker)))
+      .map((event) => ({
+        id: event.id,
+        ts: event.ts,
+        date: event.date.slice(0, 10),
+        headline: event.headline,
+        tier: event.confidence_tier,
+        category: event.category,
+        magnitude: event.magnitude,
+      }));
     const live = await getLivePayload();
     return {
       points,
@@ -523,16 +588,83 @@ export const api = {
       now: toUnix(live.asOf),
     };
   },
-  stocks: async () => (await loadDataset()).stockMap,
+
+  // The full tradable universe (what a user is allowed to add), not just what they hold.
+  universe: async () => (await loadReference()).stockMap,
+  stocks: async () => (await loadReference()).stockMap,
+
+  // ---- Portfolio mutations ----
+  holdings: async () => (await loadPortfolio()).holdings,
+  lots: async () => loadLots(),
+
+  addLot: async ({ symbol, shares, buyPrice, purchaseDate }) => {
+    const reference = await loadReference();
+    const ticker = String(symbol || '').toUpperCase();
+    if (!reference.stockMap[ticker]) throw new Error(`${ticker} is not in the tradable universe.`);
+    if (!(shares > 0)) throw new Error('Quantity must be greater than zero.');
+    if (!(buyPrice > 0)) throw new Error('Purchase price must be greater than zero.');
+    if (!purchaseDate) throw new Error('A purchase date is required.');
+    if (purchaseDate > isoDay(Math.floor(Date.now() / 1000))) {
+      throw new Error('Purchase date cannot be in the future.');
+    }
+
+    const supabase = getSupabase();
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth?.user) throw new Error('You must be signed in to change your portfolio.');
+
+    const { error } = await supabase.from('portfolio_lots').insert({
+      user_id: auth.user.id,
+      ticker,
+      shares,
+      buy_price: buyPrice,
+      purchase_date: purchaseDate,
+    });
+    if (error) throw error;
+    invalidatePortfolio();
+  },
+
+  // Remove a single purchase lot.
+  deleteLot: async (lotId) => {
+    const { error } = await getSupabase().from('portfolio_lots').delete().eq('id', lotId);
+    if (error) throw error;
+    invalidatePortfolio();
+  },
+
+  // Sell out of a ticker entirely — removes every lot of it.
+  deleteHolding: async (symbol) => {
+    const { error } = await getSupabase()
+      .from('portfolio_lots')
+      .delete()
+      .eq('ticker', String(symbol).toUpperCase());
+    if (error) throw error;
+    invalidatePortfolio();
+  },
+
+  // The closing price on a given date, so the add-stock form can prefill a realistic
+  // purchase price instead of making the user look it up.
+  priceOn: async (symbol, date) => {
+    const reference = await loadReference();
+    const daily = reference.barIndex[String(symbol).toUpperCase()]?.['1d'] || [];
+    if (!daily.length) return null;
+    const targetTs = toUnix(`${date}T23:59:59Z`);
+    let chosen = null;
+    for (const bar of daily) {
+      if (bar.t <= targetTs) chosen = bar;
+      else break;
+    }
+    return chosen?.c ?? daily[0].c;
+  },
+
   enrichStatus: async () => ({ available: false, provider: 'supabase' }),
   enrich: async (id) => {
-    const data = await loadDataset();
-    const event = data.eventsById[id];
+    const reference = await loadReference();
+    const event = reference.eventsById[id];
     if (!event) throw new Error(`unknown event ${id}`);
     return { id, headline: event.headline, curated: event.impacts, ai: null };
   },
+
   stockHistory: async (symbol, timeframe) => {
-    const sym = symbol.toUpperCase();
+    const sym = String(symbol).toUpperCase();
     if (!TIMEFRAMES.includes(timeframe)) timeframe = 'SINCE';
     return getStockHistoryPayload(sym, timeframe);
   },

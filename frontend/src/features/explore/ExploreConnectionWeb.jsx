@@ -85,7 +85,7 @@ export default function ExploreConnectionWeb({ graph, selectedId, onSelect }) {
       ctx.shadowBlur = (14 + 8 * pulse) / scale;
       ctx.beginPath();
       ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
-      ctx.fillStyle = '#0a0f1e';
+      ctx.fillStyle = '#050506';
       ctx.fill();
       ctx.lineWidth = 2.25 / scale;
       ctx.strokeStyle = selected ? '#fff' : color;

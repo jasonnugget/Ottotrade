@@ -5,8 +5,92 @@
 .port-title h1 { margin: 0; font-size: 20px; }
 .port-title p { margin: 2px 0 0; }
 
-.web-cta { background: linear-gradient(90deg,#6366f1,#8b5cf6); color:#fff; border:none; border-radius:9px; padding:10px 16px; font-size:13px; font-weight:600; cursor:pointer; }
-
 .home-hero { padding: 18px 20px; }
 .home-hero .rh-value { font-size: 38px; }
 .day-chip { margin-left: 10px; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,0.06); }
+
+/* ---- buttons ---- */
+.btn-primary { background: var(--accent); color: #fff; border: none; border-radius: 9px; padding: 9px 15px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+.btn-secondary { background: var(--card2); color: var(--text); border: 1px solid var(--border); border-radius: 9px; padding: 9px 15px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-secondary:hover { border-color: var(--accent); }
+.btn-link { background: transparent; border: none; color: var(--accent); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; padding: 4px 6px; }
+.btn-link:hover { text-decoration: underline; }
+.btn-danger { background: transparent; border: 1px solid var(--border); color: var(--neg); border-radius: 7px; padding: 4px 9px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+.btn-danger:hover { border-color: var(--neg); background: rgba(239,68,68,0.1); }
+.btn-danger:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ---- add-stock form ---- */
+.add-stock-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px; }
+.add-stock-grid label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.add-stock-grid select, .add-stock-grid input {
+  background: var(--card2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 10px; font: inherit; font-size: 13px;
+}
+.add-stock-grid select:focus, .add-stock-grid input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.add-stock-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+.add-stock-total { font-size: 13px; color: var(--muted); }
+.add-stock-total strong { color: var(--text); font-size: 16px; margin-left: 4px; }
+.add-stock-actions { display: flex; gap: 8px; }
+.add-stock-error { margin: 10px 0 0; color: var(--neg); font-size: 12px; }
+
+/* ---- holdings table ---- */
+/* Columns: stock | shares | avg cost | price | total cost | value | P/L | actions */
+.holdings-table-head, .holding-main {
+  display: grid;
+  grid-template-columns: minmax(140px, 1.6fr) repeat(6, minmax(72px, 1fr)) minmax(120px, auto);
+  gap: 10px;
+  align-items: center;
+}
+.holdings-table-head { padding: 0 6px 8px; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.holdings-table-head > span:not(:first-child) { text-align: right; }
+.holdings-table-head > span:last-child { text-align: left; }
+
+.holding-block { border-bottom: 1px solid rgba(255,255,255,0.05); }
+.holding-main { padding: 12px 6px; cursor: pointer; }
+.holding-main:hover { background: rgba(255,255,255,0.03); }
+.holding-block.open .holding-main { background: rgba(255,255,255,0.03); }
+.hb-stock { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.hb-caret { font-size: 11px; }
+.hr-sym { font-weight: 700; font-size: 15px; }
+.hr-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.holding-main .num { text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; }
+.hb-day { display: block; font-size: 11px; font-weight: 600; margin-top: 2px; }
+.hb-actions { display: flex; align-items: center; gap: 6px; justify-content: flex-start; }
+
+/* ---- purchase lots (expanded) ---- */
+.lots { padding: 4px 6px 14px 26px; }
+.lots-head, .lot-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) repeat(4, minmax(70px, 1fr)) minmax(90px, auto);
+  gap: 10px;
+  align-items: center;
+}
+.lots-head { padding-bottom: 6px; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.lots-head > span:not(:first-child) { text-align: right; }
+.lots-head > span:last-child { text-align: left; }
+.lot-row { padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.04); font-size: 12.5px; }
+.lot-row .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.holdings-total {
+  display: flex; justify-content: flex-end; gap: 22px; align-items: baseline;
+  padding-top: 12px; margin-top: 4px; border-top: 1px solid var(--border);
+  font-size: 13px; font-weight: 700;
+}
+.holdings-total > span:first-child { margin-right: auto; color: var(--muted); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.holdings-total .num { font-variant-numeric: tabular-nums; }
+
+@media (max-width: 1100px) {
+  .add-stock-grid { grid-template-columns: 1fr 1fr; }
+  /* The full table doesn't fit; let it scroll rather than crushing the columns. */
+  .holdings-table-head, .holding-main { grid-template-columns: minmax(120px, 1.4fr) repeat(6, minmax(64px, 1fr)) minmax(104px, auto); font-size: 12px; }
+}
+@media (max-width: 760px) {
+  .add-stock-grid { grid-template-columns: 1fr; }
+  .holdings-table-head { display: none; }
+  .holding-main { grid-template-columns: 1fr auto; row-gap: 4px; }
+  .holding-main .num:nth-child(n+2):nth-child(-n+6) { display: none; }
+  .lots-head { display: none; }
+  .lot-row { grid-template-columns: 1fr 1fr; row-gap: 2px; }
+}

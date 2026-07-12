@@ -85,7 +85,10 @@ export default function AppShell() {
     [data.visibleGraph, exploreSymbol]
   );
 
-  const scrubberVisible = tab === 'explore' && !!data.timeline;
+  // An empty portfolio has no value series, so timeline.start/end are undefined — the
+  // scrubber would compute a NaN span and render a broken slider. Hide it until there's
+  // an actual timeline to scrub.
+  const scrubberVisible = tab === 'explore' && data.timeline?.points?.length > 0;
 
   return (
     <div className="app-shell">
@@ -116,6 +119,7 @@ export default function AppShell() {
             timeline={data.timeline}
             stocks={data.stocks}
             onOpenStock={openStock}
+            onPortfolioChange={data.refreshPortfolio}
           />
         )}
 

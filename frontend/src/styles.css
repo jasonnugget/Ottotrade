@@ -1,13 +1,16 @@
 :root {
-  --bg: #0b1020;
-  --card: #151b2e;
-  --card2: #1b2338;
-  --text: #e7ecf5;
-  --muted: #8b97b0;
-  --border: #26304a;
+  --bg: #000000;
+  --card: #0e0f11;
+  --card2: #17191c;
+  --text: #f2f3f4;
+  --muted: #8a8f96;
+  --border: #26292e;
   --pos: #22c55e;
   --neg: #ef4444;
-  --accent: #3b82f6;
+  /* Orange to match the Otto mascot — black ink, orange octopus. */
+  --accent: #f97316;
+  /* Deep near-black used behind the bubble map / geo map canvases. */
+  --stage: #050506;
 }
 
 * { box-sizing: border-box; }
