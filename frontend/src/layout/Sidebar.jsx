@@ -7,7 +7,7 @@ const TABS = [
   { id: 'portfolio', label: 'Portfolio', icon: '◆' },
   { id: 'explore', label: 'Explore', icon: '⚲' },
   { id: 'events', label: 'Events', icon: '⚡' },
-  { id: 'guidance', label: 'Guidance', icon: '✦' },
+  { id: 'analysis', label: 'Analysis', icon: '✦' },
 ];
 
 export default function Sidebar({ active, onSelect }) {

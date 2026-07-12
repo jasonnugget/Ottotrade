@@ -3,7 +3,7 @@ import AppShell from './layout/AppShell.jsx';
 import LoginPage from './LoginPage.jsx';
 import { getSupabase } from './supabase.js';
 
-// AppShell renders the left sidebar (Home / Portfolio / Explore / Events / Guidance)
+// AppShell renders the left sidebar (Home / Portfolio / Explore / Events / Analysis)
 // and each tab's content from its own folder under features/. See features/*/ for
 // the individual tabs.
 export default function App() {

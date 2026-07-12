@@ -9,9 +9,9 @@ import HomeTab from '../features/home/HomeTab.jsx';
 import PortfolioTab from '../features/portfolio/PortfolioTab.jsx';
 import ExploreTab from '../features/explore/ExploreTab.jsx';
 import EventsTab from '../features/events/EventsTab.jsx';
-import GuidanceTab from '../features/guidance/GuidanceTab.jsx';
+import AnalysisTab from '../features/analysis/AnalysisTab.jsx';
 
-const TAB_LABEL = { home: 'Home', portfolio: 'Portfolio', events: 'Events', guidance: 'Guidance' };
+const TAB_LABEL = { home: 'Home', portfolio: 'Portfolio', events: 'Events', analysis: 'Analysis' };
 
 // App shell: owns the sidebar route + the one shared data source (useAppData).
 // Each tab below only needs the props it's handed here — teams can redesign the
@@ -144,7 +144,7 @@ export default function AppShell() {
           <EventsTab events={data.events} eventsById={data.eventsById} onOpenEvent={openEventFromFeed} />
         )}
 
-        {tab === 'guidance' && <GuidanceTab live={data.live} events={data.events} />}
+        {tab === 'analysis' && <AnalysisTab live={data.live} events={data.events} />}
 
         {scrubberVisible && (
           <TimelineScrubber timeline={data.timeline} currentTs={data.currentTs} onChange={data.setCurrentTs} />
