@@ -31,15 +31,24 @@ want new users to start with an empty portfolio.
 
 ```bash
 node backend/scripts/fetchUniverse.js   # pulls 1d/1h/5m bars for every universe ticker
-cd frontend && npm run seed:supabase    # writes supabase/seed.sql
+cd frontend && npm run seed:supabase    # writes supabase/seed.sql + seed-bars-*.sql
 ```
 
-Then run `supabase/seed.sql` in the SQL Editor. It seeds the stock catalog, price bars,
-events, impacts, and event edges. It **does not** touch `portfolio_lots` — that's user data.
+Then, in the SQL Editor, run **in this order**:
+
+1. `supabase/seed.sql` (~12 KB) — stock catalog, events, impacts, event edges.
+2. `supabase/seed-bars-1.sql`, `seed-bars-2.sql`, … — the price bars, in numeric order.
+
+The bars are split across numbered files because a single seed exceeds the SQL Editor's size
+limit. Only `seed-bars-1.sql` truncates `demo_stock_bars`; the rest append, so running them
+out of order (or skipping one) leaves you with missing price history.
+
+None of these touch `portfolio_lots` — that's user data.
 
 Every ticker in `backend/src/universe.js` gets price bars, which is what makes it addable to
-a portfolio. To add a new tradable stock: add it to `universe.js`, re-run both commands
-above, and re-run the seed.
+a portfolio. The universe is deliberately capped at 15 tickers: each one adds ~450 rows of
+bars, and the seed gets too big for the SQL Editor if it grows much past that. To add one,
+edit `universe.js`, re-run both commands above, and re-run the seed files.
 
 ## 3. Environment variables
 
