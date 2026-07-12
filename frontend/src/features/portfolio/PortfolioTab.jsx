@@ -3,7 +3,7 @@ import PortfolioChart from './PortfolioChart.jsx';
 import './portfolio.css';
 
 // Robinhood-style portfolio dashboard: value, chart, clickable holdings.
-export default function PortfolioTab({ live, timeline, stocks, onOpenStock, onOpenWeb }) {
+export default function PortfolioTab({ live, timeline, stocks, onOpenStock }) {
   const points = timeline?.points || [];
   const value = live?.currentValue ?? (points.length ? points[points.length - 1].value : null);
   const cost = live?.costBasis ?? 50000;
@@ -17,7 +17,6 @@ export default function PortfolioTab({ live, timeline, stocks, onOpenStock, onOp
           <h1>Portfolio</h1>
           <p className="muted tiny"></p>
         </div>
-        <button className="web-cta" onClick={onOpenWeb}>◕ Home — event web →</button>
       </header>
 
       <div className="home-hero card">

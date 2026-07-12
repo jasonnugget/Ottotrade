@@ -1,24 +1,26 @@
-import { useState } from 'react';
 import { TIER } from '../../shared/theme.js';
 import { useStageSize } from '../../shared/graphUtils.js';
 import ConnectionWeb from '../../shared/ConnectionWeb.jsx';
-import GeoMap from './GeoMap.jsx';
+import EventPanel from '../../shared/EventPanel.jsx';
 import RobinhoodPanel from './RobinhoodPanel.jsx';
 import './home.css';
 
-// All-stocks bubble map — the "event web". Clicking a stock node drills into Explore.
+// All-stocks bubble map — the "event web". Clicking a stock node drills into Explore;
+// clicking an event bubble swaps the portfolio chart/holdings out for that event's
+// reasoning in a side panel next to the map.
 export default function HomeTab({
   graph,
-  visibleEvents,
+  eventsById,
   selectedEvent,
+  related,
   live,
   timeline,
   currentTs,
   onSelectEvent,
   onOpenStock,
   onOpenPortfolio,
+  enrich,
 }) {
-  const [mode, setMode] = useState('web');
   const [stageRef, size] = useStageSize();
 
   const handleSelect = (node) => {
@@ -34,24 +36,30 @@ export default function HomeTab({
           <h1>Home</h1>
           <p className="muted tiny"></p>
         </div>
-        <div className="view-tabs">
-          <button className={mode === 'web' ? 'active' : ''} onClick={() => setMode('web')}>◕ Web</button>
-          <button className={mode === 'map' ? 'active' : ''} onClick={() => setMode('map')}>◍ Map</button>
-        </div>
       </header>
 
-      <div className="bm-stage" ref={stageRef}>
-        {mode === 'web' ? (
+      <div className={`bm-body${selectedEvent ? ' with-side' : ''}`}>
+        <div className="bm-stage" ref={stageRef}>
           <ConnectionWeb graph={graph} selectedId={selectedEvent?.id} onSelect={handleSelect} width={size.w} height={size.h} />
-        ) : (
-          <GeoMap events={visibleEvents} selectedId={selectedEvent?.id} onSelect={handleSelect} width={size.w} height={size.h} />
+          <Legend />
+        </div>
+        {selectedEvent && (
+          <aside className="bm-side">
+            <EventPanel
+              event={selectedEvent}
+              related={related}
+              onPick={(id) => (eventsById[id] ? onSelectEvent({ id, type: 'event' }) : onOpenStock(id))}
+              enrich={enrich}
+            />
+          </aside>
         )}
-        <Legend />
       </div>
 
-      <div className="bm-footer">
-        <RobinhoodPanel timeline={timeline} currentTs={currentTs} live={live} onOpenPortfolio={onOpenPortfolio} />
-      </div>
+      {!selectedEvent && (
+        <div className="bm-footer">
+          <RobinhoodPanel timeline={timeline} currentTs={currentTs} live={live} onOpenPortfolio={onOpenPortfolio} />
+        </div>
+      )}
     </div>
   );
 }
