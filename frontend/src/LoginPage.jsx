@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import mascot from './assets/otto-mascot.png';
-import { getSupabase } from './supabase.js';
+import { getSupabase, setRememberMe as persistRememberMe } from './supabase.js';
 import './LoginPage.css';
 
 export default function LoginPage({ onLogin }) {
@@ -9,9 +9,21 @@ export default function LoginPage({ onLogin }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [formNotice, setFormNotice] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [departureVector, setDepartureVector] = useState({ x: 900, y: -520 });
   const [inkOrigin, setInkOrigin] = useState({ x: 0, y: 0 });
   const mascotRef = useRef(null);
+
+  // Otto swims off-screen trailing ink, then onLogin fires once the animation lands.
+  function beginDeparture() {
+    const rect = mascotRef.current?.getBoundingClientRect();
+    if (rect) {
+      setInkOrigin({ x: rect.left + rect.width / 2, y: rect.top + rect.height * 0.74 });
+    }
+    setDepartureVector({ x: window.innerWidth * 0.72, y: -window.innerHeight * 0.62 });
+    setIsLoggingIn(true);
+    window.setTimeout(onLogin, 2400);
+  }
 
   const isSignUp = view === 'signup';
   const isForgotPassword = view === 'forgotPassword';
@@ -78,24 +90,28 @@ export default function LoginPage({ onLogin }) {
       }
 
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
+        persistRememberMe(true);
+        const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        setFormNotice('Check your email to confirm your account, then come back to sign in.');
+
+        // Email confirmation is off for this project, so signUp() always hands back a
+        // live session — except when the email already has an account. Supabase won't
+        // error on that (it avoids leaking which emails are registered); it signals it
+        // by returning the existing user with an empty identities array instead.
+        if (data.user && data.user.identities?.length === 0) {
+          setFormError('An account with that email already exists. Try signing in instead.');
+          return;
+        }
+
+        beginDeparture();
         return;
       }
 
+      persistRememberMe(rememberMe);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
-      // Anchor the ink just beneath Otto so it always billows up from under him.
-      const rect = mascotRef.current?.getBoundingClientRect();
-      if (rect) {
-        setInkOrigin({ x: rect.left + rect.width / 2, y: rect.top + rect.height * 0.74 });
-      }
-
-      setDepartureVector({ x: window.innerWidth * 0.72, y: -window.innerHeight * 0.62 });
-      setIsLoggingIn(true);
-      window.setTimeout(onLogin, 2400);
+      beginDeparture();
     } catch (error) {
       setFormError(error.message || 'We could not complete that request. Please try again.');
     } finally {
@@ -174,7 +190,15 @@ export default function LoginPage({ onLogin }) {
           </div>
 
           {!isForgotPassword && !isSignUp && <div className="login-form__options">
-            <label className="login-form__check"><input type="checkbox" /> <span>Remember me</span></label>
+            <label className="login-form__check">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(event) => setRememberMe(event.target.checked)}
+                disabled={isLoggingIn || isSubmitting}
+              />{' '}
+              <span>Remember me</span>
+            </label>
             <a href="#forgot-password" onClick={(event) => { event.preventDefault(); changeView('forgotPassword'); }}>Forgot password?</a>
           </div>}
 
