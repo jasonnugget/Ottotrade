@@ -9,6 +9,8 @@
 .analysis-steps .active { color: var(--accent); }
 .analysis-steps .complete { color: var(--text); }
 .analysis-workspace { display: grid; grid-template-columns: minmax(180px, 25%) 1fr; flex: 1; min-height: 0; padding: 0; overflow: hidden; }
+/* Report is in — Otto is unmounted and the panel gets the full page width. */
+.analysis-workspace--expanded { grid-template-columns: 1fr; }
 .analysis-otto { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 28px 18px; text-align: center; background: radial-gradient(circle at 50% 25%, rgba(59, 130, 246, .2), transparent 52%), var(--card2); border-right: 1px solid var(--border); }
 .analysis-otto img { width: min(100%, 176px); aspect-ratio: 1; object-fit: contain; filter: drop-shadow(0 12px 18px rgba(0, 0, 0, .28)); }
 .analysis-otto p { max-width: 170px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
@@ -73,6 +75,19 @@
 .analysis-scorecard > div { padding: 8px 9px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); }
 .analysis-scorecard b { display: block; font-size: 11px; color: var(--text); margin-bottom: 2px; }
 .analysis-scorecard p { margin: 4px 0 0; }
+
+/* With the full width available, the report can breathe: larger body text, a roomier
+   table, and a max line length so long paragraphs stay readable on wide screens. */
+.analysis-workspace--expanded .analysis-report { padding: 20px 24px; font-size: 13.5px; line-height: 1.55; }
+.analysis-workspace--expanded .analysis-report h2 { font-size: 19px; margin-bottom: 10px; }
+.analysis-workspace--expanded .analysis-report h3 { margin: 18px 0 4px; font-size: 12px; }
+.analysis-workspace--expanded .analysis-report p, .analysis-workspace--expanded .analysis-report li { max-width: 90ch; }
+.analysis-workspace--expanded .analysis-markdown-table table { min-width: 100%; font-size: 12px; }
+.analysis-workspace--expanded .analysis-markdown-table th, .analysis-workspace--expanded .analysis-markdown-table td { padding: 8px 10px; }
+.analysis-workspace--expanded .analysis-scorecard { gap: 12px; margin: 8px 0 12px; }
+.analysis-workspace--expanded .analysis-scorecard > div { padding: 12px 14px; font-size: 14px; font-weight: 700; }
+.analysis-workspace--expanded .analysis-scorecard b { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.analysis-workspace--expanded .analysis-scorecard p { font-weight: 400; }
 .analysis-report-error { color: #fecaca; border-color: rgba(239, 68, 68, .3); background: rgba(239, 68, 68, .1); }
 .analysis-disclaimer { margin: 0; color: var(--muted); font-size: 11px; text-align: center; }
 @keyframes analysis-pulse { 50% { opacity: .3; transform: scale(.65); } }
