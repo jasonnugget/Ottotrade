@@ -4,11 +4,13 @@
 .bm-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .bm-title h1 { margin: 0; font-size: 20px; }
 .bm-title p { margin: 2px 0 0; }
-.view-tabs { display: flex; gap: 4px; }
-.view-tabs button { background: var(--card2); color: var(--muted); border: 1px solid var(--border); border-radius: 7px; padding: 5px 12px; font-size: 12px; cursor: pointer; }
-.view-tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-.bm-stage { position: relative; background: #0b1020; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; flex: 1; min-height: 260px; }
+/* Single column normally; when an event bubble is selected, a side panel appears
+   next to the stage and .bm-footer (the portfolio chart/holdings) is unmounted. */
+.bm-body { flex: 1; display: grid; grid-template-columns: 1fr; gap: 12px; min-height: 260px; }
+.bm-body.with-side { grid-template-columns: 1fr 300px; }
+.bm-stage { position: relative; background: #0b1020; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; min-height: 0; }
+.bm-side { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; min-height: 0; }
 .bm-footer { flex: 0 0 240px; min-height: 0; }
 
 /* Wireframe dome behind the bubble map / event web, echoing map.png's ripple backdrop. */
@@ -43,6 +45,7 @@
 @media (max-width: 900px) {
   .rh-panel { grid-template-columns: 1fr; }
   .rh-holdings { border-left: none; padding-left: 0; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; }
+  .bm-body.with-side { grid-template-columns: 1fr; }
   .bm-footer { flex: 0 0 auto; }
   .bm-stage { min-height: 420px; }
 }

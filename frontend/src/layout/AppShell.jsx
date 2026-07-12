@@ -43,7 +43,6 @@ export default function AppShell() {
     }
     setTab(nextTab);
   };
-  const openHome = () => selectTab('home');
   const openPortfolio = () => selectTab('portfolio');
 
   const openStock = (symbol) => {
@@ -117,7 +116,6 @@ export default function AppShell() {
             timeline={data.timeline}
             stocks={data.stocks}
             onOpenStock={openStock}
-            onOpenWeb={openHome}
           />
         )}
 
