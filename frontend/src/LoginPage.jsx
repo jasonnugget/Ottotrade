@@ -3,7 +3,7 @@ import mascot from './assets/otto-mascot.png';
 import { getSupabase, setRememberMe as persistRememberMe } from './supabase.js';
 import './LoginPage.css';
 
-export default function LoginPage({ onLogin }) {
+export default function LoginPage({ onLogin, onDepart }) {
   const [view, setView] = useState('login');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -15,7 +15,10 @@ export default function LoginPage({ onLogin }) {
   const mascotRef = useRef(null);
 
   // Otto swims off-screen trailing ink, then onLogin fires once the animation lands.
+  // onDepart tells App to hold this page in place until then — Supabase's SIGNED_IN event
+  // lands immediately and would otherwise redirect mid-animation.
   function beginDeparture() {
+    onDepart?.();
     const rect = mascotRef.current?.getBoundingClientRect();
     if (rect) {
       setInkOrigin({ x: rect.left + rect.width / 2, y: rect.top + rect.height * 0.74 });

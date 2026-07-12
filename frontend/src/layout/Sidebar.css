@@ -10,9 +10,27 @@
 .sidebar-tab.active .sidebar-tab-icon { color: var(--accent); }
 .sidebar-tab-icon { width: 18px; text-align: center; font-size: 15px; }
 
+/* Profile — pinned to the bottom of the sidebar. */
+.sidebar-profile { position: relative; margin-top: auto; border-top: 1px solid var(--border); padding-top: 12px; }
+.profile-button { width: 100%; display: flex; align-items: center; gap: 9px; background: transparent; border: none; border-radius: 9px; padding: 9px 10px; cursor: pointer; text-align: left; color: var(--text); }
+.profile-button:hover { background: rgba(255,255,255,0.05); }
+.profile-avatar { display: grid; place-items: center; width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%; background: var(--accent); color: #fff; font-size: 13px; font-weight: 800; }
+.profile-email { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profile-caret { font-size: 10px; flex-shrink: 0; }
+
+.profile-menu { position: absolute; bottom: calc(100% + 6px); left: 0; right: 0; background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.55); z-index: 20; }
+.profile-menu-email { padding: 7px 9px 8px; border-bottom: 1px solid var(--border); margin-bottom: 5px; color: var(--muted); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profile-menu-item { width: 100%; display: block; background: transparent; border: none; border-radius: 7px; padding: 9px; color: var(--neg); font: inherit; font-size: 13px; font-weight: 700; text-align: left; cursor: pointer; }
+.profile-menu-item:hover { background: rgba(239,68,68,0.12); }
+.profile-menu-item:disabled { opacity: .6; cursor: default; }
+
 @media (max-width: 900px) {
-  .sidebar { width: 100%; flex-direction: row; align-items: center; gap: 12px; border-right: none; border-bottom: 1px solid var(--border); padding: 8px 12px; overflow-x: auto; }
-  .sidebar-tabs { flex-direction: row; }
+  .sidebar { width: 100%; flex-direction: row; align-items: center; gap: 12px; border-right: none; border-bottom: 1px solid var(--border); padding: 8px 12px; overflow-x: visible; }
+  .sidebar-tabs { flex-direction: row; overflow-x: auto; }
   .sidebar-brand span { display: none; }
   .sidebar-brand { padding: 0; }
+  /* Sits at the end of the row, and the menu drops down instead of up. */
+  .sidebar-profile { margin-top: 0; margin-left: auto; border-top: none; padding-top: 0; flex-shrink: 0; }
+  .profile-email { display: none; }
+  .profile-menu { bottom: auto; top: calc(100% + 6px); left: auto; right: 0; min-width: 190px; }
 }

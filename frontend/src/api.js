@@ -210,6 +210,13 @@ function invalidatePortfolio() {
   lotsPromise = undefined;
 }
 
+// Called on every auth change (see App.jsx). Without this, the lots cached for the user who
+// just signed out would still be in memory when the next user signs in — they'd briefly see
+// someone else's portfolio. Reference data (prices, events) is public, so it can stay.
+export function resetPortfolioCache() {
+  lotsPromise = undefined;
+}
+
 // Collapse a ticker's lots into one holding. This is where average cost per share comes
 // from: total dollars spent / total shares owned — NOT the price of the most recent buy.
 function holdingsFromLots(lots) {
