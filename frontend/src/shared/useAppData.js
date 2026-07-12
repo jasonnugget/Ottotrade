@@ -12,6 +12,7 @@ export default function useAppData() {
   const [events, setEvents] = useState(null);
   const [stocks, setStocks] = useState({});
   const [live, setLive] = useState(null);
+  const [quotes, setQuotes] = useState({});
   const [enrichAvail, setEnrichAvail] = useState(false);
   const [currentTs, setCurrentTs] = useState(null);
   const [ai, setAi] = useState({});
@@ -25,8 +26,8 @@ export default function useAppData() {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([api.timeline(), api.graph(), api.events(), api.stocks(), api.enrichStatus(), api.live()])
-      .then(([tl, g, ev, st, es, lv]) => {
+    Promise.all([api.timeline(), api.graph(), api.events(), api.stocks(), api.enrichStatus(), api.live(), api.universeQuotes()])
+      .then(([tl, g, ev, st, es, lv, qs]) => {
         if (cancelled) return;
         setTimeline(tl);
         setFullGraph(g);
@@ -34,6 +35,7 @@ export default function useAppData() {
         setStocks(st);
         setEnrichAvail(es.available);
         setLive(lv);
+        setQuotes(qs);
         // Snap the scrubber to the end of the (possibly new) timeline.
         setCurrentTs(tl.end ?? null);
       })
@@ -93,6 +95,7 @@ export default function useAppData() {
     events,
     stocks,
     live,
+    quotes,
     currentTs,
     setCurrentTs,
     eventsById,

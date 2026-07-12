@@ -600,6 +600,15 @@ export const api = {
   universe: async () => (await loadReference()).stockMap,
   stocks: async () => (await loadReference()).stockMap,
 
+  // Latest price + day change for EVERY tradable stock, held or not — the Explore list
+  // prices the whole universe, and `quotes` above only covers the user's positions.
+  universeQuotes: async () => {
+    const reference = await loadReference();
+    return Object.fromEntries(
+      Object.keys(reference.stockMap).map((symbol) => [symbol, latestQuoteForSymbol(reference, symbol)])
+    );
+  },
+
   // ---- Portfolio mutations ----
   holdings: async () => (await loadPortfolio()).holdings,
   lots: async () => loadLots(),

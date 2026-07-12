@@ -2,9 +2,11 @@ import { TIER, categoryLabel, tierColor, dirColor } from './theme.js';
 import { pct } from '../api.js';
 
 // Explainability panel: confidence tiers + causal reasoning for a selected event.
-export default function EventPanel({ event, related, onPick, enrich }) {
+// showAi=false hides the Gemini generate-reasoning block — Explore's single-stock pages
+// opt out of it, since the curated reasoning is the point there.
+export default function EventPanel({ event, related, onPick, enrich, showAi = true }) {
   if (!event) return null;
-  const { available, result, loading, error, run } = enrich;
+  const { available, result, loading, error, run } = enrich || {};
 
   return (
     <div className="event-panel">
@@ -54,33 +56,35 @@ export default function EventPanel({ event, related, onPick, enrich }) {
         </div>
       )}
 
-      <div className="ep-ai">
-        <button className="ai-btn" disabled={loading} onClick={() => run(event.id)}>
-          {loading ? 'Generating…' : '✦ Generate reasoning with Gemini'}
-        </button>
-        {!available && !result && (
-          <div className="muted tiny ep-ai-note">
-            Set <code>GEMINI_API_KEY</code> on the backend to generate live. Curated reasoning shown above.
-          </div>
-        )}
-        {error && <div className="tiny neg">{error}</div>}
-        {result && (
-          <div className="ep-ai-result">
-            <div className="muted tiny">Gemini ({result.model}) · {result.confidence_tier}</div>
-            {result.impacts.map((im) => (
-              <div className="ep-impact" key={im.ticker}>
-                <div className="ep-impact-head">
-                  <span className="ep-ticker">{im.ticker}</span>
-                  <span className="ep-tier" style={{ background: tierColor(im.tier) }}>
-                    {TIER[im.tier]?.label || im.tier}
-                  </span>
+      {showAi && (
+        <div className="ep-ai">
+          <button className="ai-btn" disabled={loading} onClick={() => run(event.id)}>
+            {loading ? 'Generating…' : '✦ Generate reasoning with Gemini'}
+          </button>
+          {!available && !result && (
+            <div className="muted tiny ep-ai-note">
+              Set <code>GEMINI_API_KEY</code> on the backend to generate live. Curated reasoning shown above.
+            </div>
+          )}
+          {error && <div className="tiny neg">{error}</div>}
+          {result && (
+            <div className="ep-ai-result">
+              <div className="muted tiny">Gemini ({result.model}) · {result.confidence_tier}</div>
+              {result.impacts.map((im) => (
+                <div className="ep-impact" key={im.ticker}>
+                  <div className="ep-impact-head">
+                    <span className="ep-ticker">{im.ticker}</span>
+                    <span className="ep-tier" style={{ background: tierColor(im.tier) }}>
+                      {TIER[im.tier]?.label || im.tier}
+                    </span>
+                  </div>
+                  <div className="ep-reasoning">{im.reasoning}</div>
                 </div>
-                <div className="ep-reasoning">{im.reasoning}</div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

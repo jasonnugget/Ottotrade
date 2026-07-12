@@ -8,7 +8,7 @@
 .sidebar-tab:hover { background: rgba(255,255,255,0.05); color: var(--text); }
 .sidebar-tab.active { background: var(--card2); color: var(--text); }
 .sidebar-tab.active .sidebar-tab-icon { color: var(--accent); }
-.sidebar-tab-icon { width: 18px; text-align: center; font-size: 15px; }
+.sidebar-tab-icon { width: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; }
 
 /* Profile — pinned to the bottom of the sidebar. */
 .sidebar-profile { position: relative; margin-top: auto; border-top: 1px solid var(--border); padding-top: 12px; }

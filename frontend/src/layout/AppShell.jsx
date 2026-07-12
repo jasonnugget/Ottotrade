@@ -178,6 +178,7 @@ function ExploreRoute({
         position={(data.live?.positions || []).find((p) => p.symbol === known)}
         positions={data.live?.positions || []}
         stocks={data.stocks}
+        quotes={data.quotes}
         selectedEvent={selectedEvent}
         related={related}
         onSelect={setSelected}
